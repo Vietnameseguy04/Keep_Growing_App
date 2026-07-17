@@ -130,12 +130,19 @@ export default function FriendsPage() {
       const loadedFriendships = friendshipData ?? [];
       setFriendships(loadedFriendships);
 
-      const { data: notificationData } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const { data: notificationData, error: notificationError } =
+        await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+      if (notificationError) {
+        // Don't block the whole page over this - friends/requests still
+        // work - but log it so a migration/RLS problem doesn't fail silently.
+        console.error("Could not load notifications:", notificationError);
+      }
 
       const loadedNotifications = notificationData ?? [];
       setNotifications(loadedNotifications);
