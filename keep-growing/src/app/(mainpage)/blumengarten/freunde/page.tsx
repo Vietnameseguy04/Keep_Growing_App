@@ -46,6 +46,35 @@ export default function FreundePage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [notifPermission, setNotifPermission] = useState<
+    NotificationPermission | "unsupported"
+  >("unsupported");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if ("Notification" in window) {
+        setNotifPermission(Notification.permission);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  async function handleEnableBrowserNotifications() {
+    if (notifPermission !== "default") return;
+
+    const permission = await Notification.requestPermission();
+    setNotifPermission(permission);
+
+    if (permission === "granted") {
+      // Weckt den globalen Realtime-Listener (LikeBenachrichtigungen im
+      // Root-Layout), ohne dass die Seite neu geladen werden muss.
+      window.dispatchEvent(new Event("kg-benachrichtigungen-aktiviert"));
+      new Notification("Keep Growing", {
+        body: "Benachrichtigungen sind aktiviert – du erfährst es sofort, wenn jemandem deine Blumenwiese gefällt ♥",
+        icon: "/images/wildblume-3.svg",
+      });
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -304,6 +333,28 @@ export default function FreundePage() {
           <div className="mb-5 rounded-[22px] bg-[#eaf1e2] px-5 py-4 text-center">
             <p className="text-[14px] leading-6 text-[#5e7050]">{message}</p>
           </div>
+        )}
+
+        {/* Browser-Benachrichtigungen aktivieren */}
+        {notifPermission === "default" && (
+          <div className="mb-5 flex items-center justify-between gap-3 rounded-[22px] bg-[#f6e7ea] px-5 py-4">
+            <p className="text-[13px] leading-5 text-[#5e5357]">
+              Erfahre sofort, wenn jemandem deine Blumenwiese gefällt.
+            </p>
+            <button
+              type="button"
+              onClick={handleEnableBrowserNotifications}
+              className="shrink-0 rounded-full bg-[#c08a95] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#b67f8a]"
+            >
+              Aktivieren
+            </button>
+          </div>
+        )}
+        {notifPermission === "denied" && (
+          <p className="mb-5 rounded-[22px] bg-[#f1ece9] px-5 py-3 text-[12px] leading-5 text-[#8a7d81]">
+            Browser-Benachrichtigungen sind blockiert. Du kannst sie in den
+            Website-Einstellungen deines Browsers wieder erlauben.
+          </p>
         )}
 
         {/* Benachrichtigungen */}

@@ -255,6 +255,24 @@ create trigger on_garden_like
   for each row execute function public.notify_garden_like();
 
 
+-- Realtime für notifications aktivieren, damit der Browser sofort
+-- benachrichtigt werden kann, wenn ein neues Like eintrifft
+-- (genutzt von blumengarten/freunde/LikeBenachrichtigungen.tsx):
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'notifications'
+  ) then
+    alter publication supabase_realtime add table public.notifications;
+  end if;
+end;
+$$;
+
+
 -- ------------------------------------------------------------
 -- 6. flower_garden: Freunde dürfen (nur) lesen
 -- ------------------------------------------------------------

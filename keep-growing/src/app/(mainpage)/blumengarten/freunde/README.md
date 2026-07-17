@@ -46,20 +46,22 @@ Freunde-Seite und Reset zeigen dann einen freundlichen Hinweis.
 
 ## 📋 Änderungen außerhalb von `blumengarten/` (zur Absprache)
 
-Wir haben **keine bestehenden Dateien außerhalb von `blumengarten/`
-verändert**. Es kamen nur neue Dateien hinzu:
+**Jede einzelne geänderte Codezeile ist in
+[`AENDERUNGEN-AUSSERHALB.md`](./AENDERUNGEN-AUSSERHALB.md) dokumentiert.**
+Zusammenfassung:
 
 | Ort | Was | Warum |
 | --- | --- | --- |
+| `einstellungen/page.tsx` | Neue Sektion „Blumenwiese" mit „Wiese zurücksetzen" (Server Action + aufklappbarer Bestätigung); Funktionskopf liest jetzt `searchParams` für die Fehlermeldung | Manueller Reset auch aus den Einstellungen heraus |
+| `src/app/layout.tsx` | 2 additive Zeilen: Import + `<LikeBenachrichtigungen />` | Browser-Benachrichtigungen bei neuen Likes auf jeder Seite (Logik liegt in `freunde/LikeBenachrichtigungen.tsx`) |
 | `public/images/wildblume-1.svg` … `wildblume-4.svg` | 4 neue Bild-Dateien | Aquarell-Blumen für den Garten. Rein additiv, die alten `flower-*.png` bleiben unangetastet (falls andere Seiten sie nutzen). |
-| Supabase (Datenbank) | Neue Tabellen + Policies per `supabase-migration.sql` | Freunde-System, Likes, Benachrichtigungen, manueller Reset. **Bitte im Team absprechen, bevor das SQL auf der gemeinsamen Instanz läuft.** |
+| Supabase (Datenbank) | Neue Tabellen + Policies + Realtime per `supabase-migration.sql` | Freunde-System, Likes, Benachrichtigungen, manueller Reset. **Bitte im Team absprechen, bevor das SQL auf der gemeinsamen Instanz läuft.** |
 
-Ideen aus der Vorlage, die bewusst NICHT umgesetzt wurden (weil sie
-Änderungen außerhalb von `blumengarten` bräuchten – bei Bedarf absprechen):
-- Reset-Knopf zusätzlich in `einstellungen/page.tsx`
-- Push-Benachrichtigungen auf den Sperrbildschirm (bräuchte Service Worker
-  und Änderungen am App-Layout); aktuell gibt es In-App-Benachrichtigungen
-  auf der Freunde-Seite.
+Browser-Benachrichtigungen werden über den Button „Aktivieren" auf der
+Freunde-Seite eingeschaltet und kommen an, solange die App in einem Tab
+geöffnet ist. Echte Push-Nachrichten bei geschlossenem Browser (wie im
+Sperrbildschirm-Mockup) bräuchten zusätzlich Service Worker + VAPID +
+Supabase Edge Function – möglicher nächster Ausbauschritt.
 
 ## Hinweis zum Datenschutz
 
