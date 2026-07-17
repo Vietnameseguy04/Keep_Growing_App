@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-export default async function EinstellungenPage() {
+export default async function EinstellungenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string }>;
+}) {
+  const { reset } = await searchParams;
   const supabase = await createClient();
 
   // AUTH-CHECK: Nur für eingeloggte User
@@ -19,6 +24,32 @@ export default async function EinstellungenPage() {
     const supabase = await createClient();
     await supabase.auth.signOut();
     redirect('/login');
+  }
+
+  /**
+   * Server Action: Blumenwiese zurücksetzen.
+   * Die Blumen werden nicht gelöscht, sondern nur ausgeblendet – der
+   * Blumengarten zeigt nur Blumen, die nach garden_settings.last_reset_at
+   * gepflanzt wurden (Tabelle aus blumengarten/freunde/supabase-migration.sql).
+   */
+  async function handleGardenReset() {
+    'use server';
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      redirect('/login');
+    }
+
+    const { error } = await supabase.from('garden_settings').upsert({
+      user_id: user.id,
+      last_reset_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      redirect('/einstellungen?reset=fehler');
+    }
+
+    redirect('/blumengarten');
   }
 
   return (
@@ -44,6 +75,36 @@ export default async function EinstellungenPage() {
             <span className="text-gray-800 font-medium">{user.user_metadata.full_name || 'User'}</span>
             <span className="text-gray-400 text-sm">{user.email}</span>
           </div>
+        </section>
+
+        {/* Flower meadow Sektion */}
+        <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Flower meadow</h2>
+          {reset === 'fehler' && (
+            <p className="mb-4 text-sm text-[#9b5d68]">
+              The reset did not work. Has the database migration
+              (blumengarten/freunde/supabase-migration.sql) been run yet?
+            </p>
+          )}
+          <details className="group">
+            <summary className="cursor-pointer list-none flex items-center justify-between text-gray-800 font-medium">
+              Reset your meadow
+              <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
+            </summary>
+            <p className="mt-3 text-sm text-gray-400">
+              Your current flowers will be archived and your meadow starts
+              fresh. This also happens automatically at the start of each
+              month.
+            </p>
+            <form action={handleGardenReset} className="mt-4">
+              <button
+                type="submit"
+                className="w-full bg-[#c08a95] text-white py-3 rounded-[20px] font-bold shadow hover:bg-[#b67f8a] active:scale-[0.98] transition-all"
+              >
+                Yes, reset my meadow now
+              </button>
+            </form>
+          </details>
         </section>
 
         {/* Logout Button */}

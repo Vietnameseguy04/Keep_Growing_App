@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Great_Vibes } from "next/font/google";
 import "./globals.css";
+import LikeNotifications from "./(mainpage)/blumengarten/freunde/LikeNotifications";
 
 // 1. Standard Schriftart (Modern/Clean)
 const geistSans = Geist({
@@ -41,6 +42,7 @@ export default function RootLayout({
           antialiased
         `}
       >
+        <LikeNotifications />
         {children}
       </body>
     </html>
