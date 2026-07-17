@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 340">
+  <defs>
+    <filter id="wc4" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="2" seed="49" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7"/>
+    </filter>
+    <radialGradient id="petal4" cx="35%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#fbeeda"/>
+      <stop offset="55%" stop-color="#f3d7ae"/>
+      <stop offset="100%" stop-color="#e4b98b"/>
+    </radialGradient>
+    <radialGradient id="center4" cx="40%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#6b4a58"/>
+      <stop offset="100%" stop-color="#402a35"/>
+    </radialGradient>
+    <linearGradient id="stem4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7d9b6a"/>
+      <stop offset="100%" stop-color="#587448"/>
+    </linearGradient>
+    <path id="p4" d="M0 0 C -20 -12, -26 -44, -6 -60 C 0 -65, 6 -64, 11 -56 C 23 -37, 15 -10, 0 0 Z"/>
+  </defs>
+  <g filter="url(#wc4)">
+    <path d="M100 128 C 103 182, 95 242, 102 330" fill="none" stroke="url(#stem4)" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <path d="M101 212 C 119 204, 135 207, 144 222 C 130 230, 111 226, 101 212 Z" fill="#8fae7a" opacity="0.7"/>
+    <path d="M100 262 C 83 254, 68 256, 58 271 C 72 279, 91 275, 100 262 Z" fill="#87a873" opacity="0.66"/>
+    <g transform="translate(100 92)">
+      <use href="#p4" transform="rotate(0)" fill="url(#petal4)" opacity="0.92"/>
+      <use href="#p4" transform="rotate(51)" fill="url(#petal4)" opacity="0.8"/>
+      <use href="#p4" transform="rotate(103)" fill="url(#petal4)" opacity="0.9"/>
+      <use href="#p4" transform="rotate(154)" fill="url(#petal4)" opacity="0.78"/>
+      <use href="#p4" transform="rotate(206)" fill="url(#petal4)" opacity="0.88"/>
+      <use href="#p4" transform="rotate(257)" fill="url(#petal4)" opacity="0.8"/>
+      <use href="#p4" transform="rotate(309)" fill="url(#petal4)" opacity="0.86"/>
+      <circle r="14" fill="url(#center4)" opacity="0.95"/>
+      <circle cx="-5" cy="-4" r="2" fill="#c9a2b0" opacity="0.6"/>
+      <circle cx="5" cy="3" r="1.8" fill="#c9a2b0" opacity="0.55"/>
+      <circle cx="1" cy="-7" r="1.6" fill="#c9a2b0" opacity="0.5"/>
+    </g>
+  </g>
+</svg>

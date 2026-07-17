@@ -10,26 +10,28 @@ export type FlowerOption = {
   image: string;
 };
 
+// Die IDs sind in der Datenbank (flower_garden.flower_type) gespeichert
+// und dürfen nicht verändert werden – nur Titel und Bilder.
 export const flowerOptions: FlowerOption[] = [
   {
     id: "creativityWarmth",
-    title: "Creativity & warmth",
-    image: "/images/flower-1.png",
+    title: "Schwere & Wärme",
+    image: "/images/wildblume-1.svg",
   },
   {
     id: "imaginativeTraining",
-    title: "Imaginative training",
-    image: "/images/flower-2.png",
+    title: "Fantasiereise",
+    image: "/images/wildblume-2.svg",
   },
   {
     id: "innerPeace",
-    title: "Inner peace",
-    image: "/images/flower-3.png",
+    title: "Innere Ruhe",
+    image: "/images/wildblume-3.svg",
   },
   {
     id: "selfEmpowerment",
-    title: "Self-empowerment",
-    image: "/images/flower-4.png",
+    title: "Selbststärkung",
+    image: "/images/wildblume-4.svg",
   },
 ];
 

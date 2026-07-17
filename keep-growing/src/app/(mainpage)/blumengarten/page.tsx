@@ -23,13 +23,20 @@ type PendingFlower = {
 
 type GardenMode = "view" | "place-new" | "edit-select" | "edit-move";
 
+// Blumen werden pro Monat gesammelt: Sichtbar sind nur Blumen, die nach dem
+// Monatsanfang (bzw. nach einem manuellen Zurücksetzen) gepflanzt wurden.
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
 export default function BlumengartenPage() {
   const router = useRouter();
   const supabase = createClient();
   const gardenRef = useRef<HTMLDivElement>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState("friend");
+  const [userName, setUserName] = useState("freundin");
   const [flowers, setFlowers] = useState<SavedFlower[]>([]);
   const [selectedFlowerType, setSelectedFlowerType] = useState<string | null>(
     null,
@@ -49,6 +56,7 @@ export default function BlumengartenPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
   useEffect(() => {
     async function loadGarden() {
@@ -76,16 +84,35 @@ export default function BlumengartenPage() {
       }
 
       setUserId(user.id);
-      setUserName((user.user_metadata.full_name || "friend").toLowerCase());
+      setUserName((user.user_metadata.full_name || "freundin").toLowerCase());
+
+      // Sichtbarkeitsgrenze: Monatsanfang oder letztes manuelles Zurücksetzen
+      let visibleFrom = startOfCurrentMonth();
+
+      const { data: settings } = await supabase
+        .from("garden_settings")
+        .select("last_reset_at")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (settings?.last_reset_at) {
+        const lastReset = new Date(settings.last_reset_at);
+        if (lastReset > visibleFrom) {
+          visibleFrom = lastReset;
+        }
+      }
 
       const { data, error } = await supabase
         .from("flower_garden")
         .select("*")
         .eq("user_id", user.id)
+        .gte("created_at", visibleFrom.toISOString())
         .order("layer_order", { ascending: true });
 
       if (error) {
-        setErrorMessage(`Flower garden could not be loaded: ${error.message}`);
+        setErrorMessage(
+          `Deine Blumenwiese konnte nicht geladen werden: ${error.message}`,
+        );
       } else {
         setFlowers(data ?? []);
       }
@@ -164,7 +191,9 @@ export default function BlumengartenPage() {
       .single();
 
     if (error) {
-      setErrorMessage(`The flower could not be saved: ${error.message}`);
+      setErrorMessage(
+        `Die Blume konnte nicht gespeichert werden: ${error.message}`,
+      );
       setSaving(false);
       return;
     }
@@ -193,7 +222,7 @@ export default function BlumengartenPage() {
 
     if (error) {
       setErrorMessage(
-        `The flower position could not be updated: ${error.message}`,
+        `Die Position konnte nicht gespeichert werden: ${error.message}`,
       );
       setSaving(false);
       return;
@@ -233,6 +262,33 @@ export default function BlumengartenPage() {
     setMode("view");
   }
 
+  async function handleConfirmReset() {
+    if (!userId) return;
+
+    setSaving(true);
+    setErrorMessage(null);
+
+    // Die Blumen bleiben als Archiv in der Datenbank erhalten und werden
+    // nur ausgeblendet: Ab jetzt zählt last_reset_at als Sichtbarkeitsgrenze.
+    const { error } = await supabase.from("garden_settings").upsert({
+      user_id: userId,
+      last_reset_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      setErrorMessage(
+        "Zum Zurücksetzen muss zuerst die Datenbank-Migration ausgeführt werden (siehe blumengarten/freunde/supabase-migration.sql).",
+      );
+      setSaving(false);
+      setConfirmingReset(false);
+      return;
+    }
+
+    setFlowers([]);
+    setConfirmingReset(false);
+    setSaving(false);
+  }
+
   function handleLeaveGarden() {
     router.push("/dashboard");
   }
@@ -240,20 +296,20 @@ export default function BlumengartenPage() {
   const infoText =
     mode === "place-new"
       ? pendingNewFlower
-        ? "Does this place feel right for your flower?"
-        : "Choose a place where your new flower can grow."
+        ? "Fühlt sich dieser Platz richtig an für deine Blume?"
+        : "Wähle einen Platz, an dem deine neue Blume wachsen kann."
       : mode === "edit-select"
-        ? "Select a flower you would like to move."
+        ? "Wähle eine Blume aus, die du verschieben möchtest."
         : mode === "edit-move"
           ? pendingEditPosition
-            ? "Does this new place feel right for your flower?"
-            : "Choose a new place for your flower."
-          : "You’ve been at it for four days already! Watch your flower meadow & your mind slowly grow.";
+            ? "Fühlt sich der neue Platz richtig an für deine Blume?"
+            : "Wähle einen neuen Platz für deine Blume."
+          : "Schön, dass du dranbleibst! Sieh zu, wie deine Blumenwiese & dein Geist langsam wachsen.";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Loading flower garden...</p>
+        <p className="text-[#7a6d71]">Deine Blumenwiese wird geladen...</p>
       </main>
     );
   }
@@ -264,7 +320,7 @@ export default function BlumengartenPage() {
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-cursive)] text-[42px] leading-tight lowercase text-[#d1c7b0] opacity-90">
-              hello {userName}
+              hallo {userName}
             </h2>
           </div>
 
@@ -275,7 +331,7 @@ export default function BlumengartenPage() {
                 onClick={handleStartEditMode}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Edit
+                Bearbeiten
               </button>
             )}
 
@@ -285,7 +341,7 @@ export default function BlumengartenPage() {
                 onClick={handleCancelEditMode}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Cancel
+                Abbrechen
               </button>
             )}
 
@@ -295,7 +351,7 @@ export default function BlumengartenPage() {
                 onClick={handleCancelPlaceNew}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Cancel
+                Abbrechen
               </button>
             )}
 
@@ -303,7 +359,7 @@ export default function BlumengartenPage() {
               type="button"
               onClick={handleLeaveGarden}
               className="flex h-11 w-11 items-center justify-center rounded-2xl transition hover:bg-[#f3ece8]"
-              aria-label="Leave flower garden"
+              aria-label="Blumenwiese verlassen"
             >
               <svg
                 width="24"
@@ -329,11 +385,50 @@ export default function BlumengartenPage() {
         <div
           ref={gardenRef}
           onClick={handleGardenClick}
-          className="relative h-[360px] w-full overflow-hidden rounded-[28px] bg-[#f6f3f1]"
+          className="relative h-[360px] w-full overflow-hidden rounded-[28px]"
         >
+          {/* Wiesen-Hintergrund: heller Himmel, sanfte Hügel, Grashalme */}
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox="0 0 400 360"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f7f8f0" />
+                <stop offset="60%" stopColor="#eef3e2" />
+                <stop offset="100%" stopColor="#e3ecd2" />
+              </linearGradient>
+              <linearGradient id="meadow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#d3e2ba" />
+                <stop offset="100%" stopColor="#b7cf9a" />
+              </linearGradient>
+            </defs>
+            <rect width="400" height="360" fill="url(#sky)" />
+            <path
+              d="M0 205 C 90 185, 170 200, 260 192 C 320 187, 370 194, 400 190 L 400 360 L 0 360 Z"
+              fill="#dde9c6"
+              opacity="0.8"
+            />
+            <path
+              d="M0 235 C 80 218, 180 232, 270 224 C 330 219, 375 228, 400 222 L 400 360 L 0 360 Z"
+              fill="url(#meadow)"
+            />
+            <g stroke="#9db884" strokeWidth="2" strokeLinecap="round" opacity="0.55">
+              <path d="M30 340 C 28 326, 30 316, 34 306" fill="none" />
+              <path d="M70 344 C 72 330, 70 320, 66 312" fill="none" />
+              <path d="M130 338 C 128 326, 131 316, 135 308" fill="none" />
+              <path d="M205 344 C 207 330, 204 320, 200 312" fill="none" />
+              <path d="M275 340 C 273 328, 276 318, 280 310" fill="none" />
+              <path d="M345 344 C 347 330, 344 320, 340 310" fill="none" />
+              <path d="M375 338 C 373 326, 376 318, 380 310" fill="none" />
+            </g>
+          </svg>
+
           {flowers.map((flower) => {
             const imageSrc =
-              flowerImageById[flower.flower_type] ?? "/images/flower-1.png";
+              flowerImageById[flower.flower_type] ?? "/images/wildblume-1.svg";
             const flowerTitle =
               flowerTitleById[flower.flower_type] ?? flower.flower_type;
             const isEditingSelected = editingFlowerId === flower.id;
@@ -366,7 +461,7 @@ export default function BlumengartenPage() {
                 <img
                   src={imageSrc}
                   alt={flowerTitle}
-                  className={`w-[84px] object-contain transition ${
+                  className={`w-[58px] object-contain transition ${
                     isEditingSelected ? "scale-105 opacity-80" : ""
                   }`}
                 />
@@ -378,10 +473,10 @@ export default function BlumengartenPage() {
             <img
               src={
                 flowerImageById[pendingNewFlower.flower_type] ??
-                "/images/flower-1.png"
+                "/images/wildblume-1.svg"
               }
-              alt="New flower preview"
-              className="pointer-events-none absolute w-[84px] object-contain opacity-80"
+              alt="Vorschau der neuen Blume"
+              className="pointer-events-none absolute w-[58px] object-contain opacity-80"
               style={{
                 left: `${pendingNewFlower.x * 100}%`,
                 top: `${pendingNewFlower.y * 100}%`,
@@ -393,8 +488,9 @@ export default function BlumengartenPage() {
 
           {flowers.length === 0 && mode === "view" && (
             <div className="absolute inset-0 flex items-center justify-center px-8 text-center">
-              <p className="text-sm text-[#b2a8ab]">
-                No flowers placed yet. Choose a new flower from training first.
+              <p className="text-sm text-[#7d8a70]">
+                Noch keine Blumen gepflanzt. Wähle zuerst ein Training aus und
+                lass deine erste Blume wachsen.
               </p>
             </div>
           )}
@@ -416,7 +512,7 @@ export default function BlumengartenPage() {
               disabled={saving}
               className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Confirm position"}
+              {saving ? "Wird gespeichert..." : "Position bestätigen"}
             </button>
           </div>
         )}
@@ -429,19 +525,72 @@ export default function BlumengartenPage() {
               disabled={saving}
               className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Confirm new position"}
+              {saving ? "Wird gespeichert..." : "Neue Position bestätigen"}
             </button>
           </div>
         )}
 
         {mode === "view" && (
-          <p className="mt-6 px-4 text-center text-[15px] leading-6 text-[#5e5357]">
-            Make a difference! Support biodiversity
-            <br />
-            with a wildflower meadow sponsorship
-            <br />
-            for 2,99 $. More info.
-          </p>
+          <>
+            <p className="mt-6 px-4 text-center text-[15px] leading-6 text-[#5e5357]">
+              Mach einen Unterschied! Unterstütze die Artenvielfalt
+              <br />
+              mit einer Wildblumenwiesen-Patenschaft
+              <br />
+              für 2,99 €. Mehr Infos.
+            </p>
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <img
+                src="/images/wildblume-3.svg"
+                alt=""
+                className="h-10 w-10 rounded-full bg-[#f3e9e4] object-contain p-1"
+              />
+              <button
+                type="button"
+                onClick={() => router.push("/blumengarten/freunde")}
+                className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
+              >
+                Entdecke die Blumenwiesen deiner Freunde
+              </button>
+            </div>
+
+            <div className="mt-6 text-center">
+              {confirmingReset ? (
+                <div className="rounded-[22px] bg-[#efe8e3] px-5 py-4">
+                  <p className="mb-3 text-[14px] leading-6 text-[#5e5357]">
+                    Möchtest du deine Wiese wirklich zurücksetzen? Deine
+                    bisherigen Blumen werden archiviert.
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleConfirmReset}
+                      disabled={saving}
+                      className="rounded-full bg-[#c08a95] px-5 py-2 text-[14px] font-medium text-white transition hover:bg-[#b67f8a] disabled:opacity-50"
+                    >
+                      Ja, zurücksetzen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingReset(false)}
+                      className="rounded-full bg-white px-5 py-2 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#f3ece8]"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingReset(true)}
+                  className="text-[12px] text-[#a29599] underline underline-offset-2 transition hover:text-[#c08a95]"
+                >
+                  Wiese zurücksetzen
+                </button>
+              )}
+            </div>
+          </>
         )}
 
         <div className="mt-6 text-center">
@@ -450,7 +599,7 @@ export default function BlumengartenPage() {
             onClick={() => router.push("/impressum")}
             className="text-[11px] text-[#4f6175] underline underline-offset-2"
           >
-            About us
+            Über uns
           </button>
         </div>
       </div>
