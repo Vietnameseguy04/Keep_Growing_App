@@ -125,7 +125,7 @@ export function FriendsNotifications() {
         >
           {(notification.actor_id && actorNames[notification.actor_id]) ||
             "Someone"}{" "}
-          loves your flower meadow{" "}
+          loves your flower garden{" "}
           <span aria-hidden="true" className="text-[#c08a95]">
             ♥
           </span>

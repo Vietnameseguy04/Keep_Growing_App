@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // Listens via Supabase Realtime for new rows in "notifications" and shows
-// a browser notification ("X loves your flower meadow ♥").
+// a browser notification ("X loves your flower garden ♥").
 //
 // The component renders nothing and is mounted once in the root layout
 // (src/app/layout.tsx) so notifications arrive on every page. It only
@@ -58,8 +58,8 @@ export default function LikeNotifications() {
             }
 
             const body = row.message
-              ? `${actorName} loves your flower meadow ♥ "${row.message}"`
-              : `${actorName} loves your flower meadow ♥`;
+              ? `${actorName} loves your flower garden ♥ "${row.message}"`
+              : `${actorName} loves your flower garden ♥`;
 
             new Notification("Keep Growing", {
               body,

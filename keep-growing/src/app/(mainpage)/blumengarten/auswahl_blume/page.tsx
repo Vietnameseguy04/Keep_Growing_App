@@ -71,7 +71,7 @@ export default function FlowerSelectionPage() {
             onClick={handleSkip}
             className="text-[13px] text-[#4f6175] underline underline-offset-2"
           >
-            go directly to your flower meadow
+            go directly to your flower garden
           </button>
         </div>
 

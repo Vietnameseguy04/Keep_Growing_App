@@ -189,7 +189,7 @@ export default function BlumengartenPage() {
 
       if (error) {
         setErrorMessage(
-          `Your flower meadow could not be loaded: ${error.message}`,
+          `Your flower garden could not be loaded: ${error.message}`,
         );
       } else {
         setFlowers(data ?? []);
@@ -349,12 +349,12 @@ export default function BlumengartenPage() {
           ? pendingEditPosition
             ? "Does this new place feel right for your flower?"
             : "Choose a new place for your flower."
-          : "Lovely to see you again! Watch your flower meadow & your mind slowly grow.";
+          : "Lovely to see you again! Watch your flower garden & your mind slowly grow.";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Loading your flower meadow...</p>
+        <p className="text-[#7a6d71]">Loading your flower garden...</p>
       </main>
     );
   }
@@ -559,11 +559,11 @@ export default function BlumengartenPage() {
                 <p className="px-4 text-center text-[15px] leading-6 text-[#5e5357]">
                   Make a difference! Support biodiversity
                   <br />
-                  with a wildflower meadow sponsorship
+                  with a donation to Plantlife&apos;s
                   <br />
-                  for 2,99 €.{" "}
+                  Save the Last Meadows appeal.{" "}
                   <a
-                    href="https://bluehende-landschaft.de/bluehpatenschaften-mit-echter-wirkung/"
+                    href="https://www.plantlife.org.uk/donations/save-the-last-meadows/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-2 transition hover:text-[#c08a95]"
@@ -583,7 +583,7 @@ export default function BlumengartenPage() {
                     onClick={() => router.push("/blumengarten/freunde")}
                     className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
                   >
-                    discover your friends&apos; flower meadows
+                    discover your friends&apos; flower gardens
                   </button>
                 </div>
               </motion.div>

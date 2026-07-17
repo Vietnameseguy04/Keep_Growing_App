@@ -249,6 +249,13 @@ create policy "notifications_update_own"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- Eigene Benachrichtigungen löschen (einzeln oder alle)
+drop policy if exists "notifications_delete_own" on public.notifications;
+create policy "notifications_delete_own"
+  on public.notifications for delete
+  to authenticated
+  using (auth.uid() = user_id);
+
 -- Benachrichtigungen entstehen NICHT vom Client aus, sondern automatisch
 -- über diesen Trigger, sobald ein Like gespeichert wird:
 create or replace function public.notify_garden_like()

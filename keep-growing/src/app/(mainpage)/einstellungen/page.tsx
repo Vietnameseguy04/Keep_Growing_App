@@ -77,9 +77,9 @@ export default async function EinstellungenPage({
           </div>
         </section>
 
-        {/* Flower meadow Sektion */}
+        {/* Flower garden Sektion */}
         <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
-          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Flower meadow</h2>
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Flower garden</h2>
           {reset === 'fehler' && (
             <p className="mb-4 text-sm text-[#9b5d68]">
               The reset did not work. Has the database migration
@@ -88,11 +88,11 @@ export default async function EinstellungenPage({
           )}
           <details className="group">
             <summary className="cursor-pointer list-none flex items-center justify-between text-gray-800 font-medium">
-              Reset your meadow
+              Reset your garden
               <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
             </summary>
             <p className="mt-3 text-sm text-gray-400">
-              Your current flowers will be archived and your meadow starts
+              Your current flowers will be archived and your garden starts
               fresh. This also happens automatically at the start of each
               month.
             </p>
@@ -101,7 +101,7 @@ export default async function EinstellungenPage({
                 type="submit"
                 className="w-full bg-[#c08a95] text-white py-3 rounded-[20px] font-bold shadow hover:bg-[#b67f8a] active:scale-[0.98] transition-all"
               >
-                Yes, reset my meadow now
+                Yes, reset my garden now
               </button>
             </form>
           </details>

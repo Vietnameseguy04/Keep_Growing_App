@@ -51,6 +51,9 @@ export default function FriendsPage() {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | "unsupported"
   >("unsupported");
+  const [removingFriendId, setRemovingFriendId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -72,7 +75,7 @@ export default function FriendsPage() {
       // root layout) without requiring a page reload.
       window.dispatchEvent(new Event("kg-notifications-enabled"));
       new Notification("Keep Growing", {
-        body: "Notifications are on – you'll know right away when someone loves your flower meadow ♥",
+        body: "Notifications are on – you'll know right away when someone loves your flower garden ♥",
         icon: "/images/flower-real-3.png",
       });
     }
@@ -275,6 +278,54 @@ export default function FriendsPage() {
     }
   }
 
+  async function handleDeleteNotification(id: string) {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id);
+
+    if (!error) {
+      setNotifications((prev) =>
+        prev.filter((notification) => notification.id !== id),
+      );
+    }
+  }
+
+  async function handleClearNotifications() {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (!error) {
+      setNotifications([]);
+    }
+  }
+
+  async function handleRemoveFriend(friendship: Friendship) {
+    setBusy(true);
+    setErrorMessage(null);
+
+    const { error } = await supabase
+      .from("friendships")
+      .delete()
+      .eq("id", friendship.id);
+
+    if (error) {
+      setErrorMessage("The friend could not be removed.");
+      setBusy(false);
+      return;
+    }
+
+    setFriendships((prev) =>
+      prev.filter((entry) => entry.id !== friendship.id),
+    );
+    setRemovingFriendId(null);
+    setBusy(false);
+  }
+
   const incomingRequests = friendships.filter(
     (entry) => entry.status === "pending" && entry.addressee_id === userId,
   );
@@ -301,7 +352,7 @@ export default function FriendsPage() {
           <button
             type="button"
             onClick={() => router.push("/blumengarten")}
-            aria-label="Back to your flower meadow"
+            aria-label="Back to your flower garden"
             className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
           >
             <svg
@@ -343,7 +394,7 @@ export default function FriendsPage() {
         {notifPermission === "default" && (
           <div className="mb-5 flex items-center justify-between gap-3 rounded-[22px] bg-[#f6e7ea] px-5 py-4">
             <p className="text-[13px] leading-5 text-[#5e5357]">
-              Find out right away when someone loves your flower meadow.
+              Find out right away when someone loves your flower garden.
             </p>
             <button
               type="button"
@@ -373,40 +424,69 @@ export default function FriendsPage() {
                   </span>
                 )}
               </h3>
-              {unreadCount > 0 && (
+              <span className="flex gap-3">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    className="text-[12px] text-[#a29599] underline underline-offset-2 hover:text-[#c08a95]"
+                  >
+                    Mark all as read
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleMarkAllRead}
+                  onClick={handleClearNotifications}
                   className="text-[12px] text-[#a29599] underline underline-offset-2 hover:text-[#c08a95]"
                 >
-                  Mark all as read
+                  Clear all
                 </button>
-              )}
+              </span>
             </div>
             <ul className="space-y-2">
               {notifications.slice(0, 5).map((notification) => (
                 <li
                   key={notification.id}
-                  className={`rounded-[18px] px-4 py-3 text-[14px] leading-6 ${
+                  className={`flex items-start justify-between gap-3 rounded-[18px] px-4 py-3 text-[14px] leading-6 ${
                     notification.read
                       ? "bg-[#f1ece9] text-[#8a7d81]"
                       : "bg-[#f6e7ea] text-[#5e5357]"
                   }`}
                 >
-                  {displayName(
-                    notification.actor_id
-                      ? profiles[notification.actor_id]
-                      : undefined,
-                  )}{" "}
-                  loves your flower meadow{" "}
-                  <span aria-hidden="true" className="text-[#c08a95]">
-                    ♥
-                  </span>
-                  {notification.message && (
-                    <span className="mt-1 block text-[13px] italic text-[#8a7d81]">
-                      &ldquo;{notification.message}&rdquo;
+                  <span>
+                    {displayName(
+                      notification.actor_id
+                        ? profiles[notification.actor_id]
+                        : undefined,
+                    )}{" "}
+                    loves your flower garden{" "}
+                    <span aria-hidden="true" className="text-[#c08a95]">
+                      ♥
                     </span>
-                  )}
+                    {notification.message && (
+                      <span className="mt-1 block text-[13px] italic text-[#8a7d81]">
+                        &ldquo;{notification.message}&rdquo;
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteNotification(notification.id)}
+                    aria-label="Delete notification"
+                    className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#a29599] transition hover:bg-white hover:text-[#c08a95]"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -491,7 +571,17 @@ export default function FriendsPage() {
                   <span className="text-[14px] text-[#5e5357]">
                     {displayName(profiles[request.addressee_id])}
                   </span>
-                  <span className="text-[12px] text-[#a29599]">Pending</span>
+                  <span className="flex items-center gap-3">
+                    <span className="text-[12px] text-[#a29599]">Pending</span>
+                    <button
+                      type="button"
+                      onClick={() => handleDecline(request)}
+                      disabled={busy}
+                      className="text-[12px] text-[#a29599] underline underline-offset-2 transition hover:text-[#c08a95] disabled:opacity-50"
+                    >
+                      Cancel request
+                    </button>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -506,7 +596,7 @@ export default function FriendsPage() {
           {friends.length === 0 ? (
             <p className="rounded-[18px] bg-[#f1ece9] px-4 py-3 text-[14px] leading-6 text-[#8a7d81]">
               No friends yet. Send a request and visit each other&apos;s
-              flower meadows!
+              flower gardens!
             </p>
           ) : (
             <ul className="space-y-2">
@@ -523,15 +613,47 @@ export default function FriendsPage() {
                     <span className="text-[14px] text-[#5e5357]">
                       {displayName(profiles[friendId])}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        router.push(`/blumengarten/freunde/${friendId}`)
-                      }
-                      className="rounded-full bg-[#c08a95] px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-[#b67f8a]"
-                    >
-                      Visit meadow
-                    </button>
+                    {removingFriendId === friendship.id ? (
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="text-[12px] text-[#8a7d81]">
+                          Remove this friend?
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFriend(friendship)}
+                          disabled={busy}
+                          className="rounded-full bg-[#c08a95] px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-[#b67f8a] disabled:opacity-50"
+                        >
+                          Yes, remove
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRemovingFriendId(null)}
+                          className="rounded-full bg-[#efe8e3] px-4 py-1.5 text-[13px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
+                        >
+                          Cancel
+                        </button>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            router.push(`/blumengarten/freunde/${friendId}`)
+                          }
+                          className="rounded-full bg-[#c08a95] px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-[#b67f8a]"
+                        >
+                          Visit garden
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRemovingFriendId(friendship.id)}
+                          className="text-[12px] text-[#a29599] underline underline-offset-2 transition hover:text-[#c08a95]"
+                        >
+                          Remove
+                        </button>
+                      </span>
+                    )}
                   </li>
                 );
               })}
