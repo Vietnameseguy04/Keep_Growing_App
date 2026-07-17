@@ -10,18 +10,38 @@ als **neue Datei** in `blumengarten/`, `blumengarten/freunde/` oder
 
 ## 1. `src/app/(mainpage)/dashboard/page.tsx` (Startseite)
 
-**Zweck:** Freunde-Button (mit Benachrichtigungspunkt) in der Icon-Reihe
-und ungelesene Benachrichtigungen auf der Startseite. Die gesamte Logik
-liegt in `blumengarten/freunde/DashboardFriends.tsx` – das Dashboard
-bekommt nur drei additive Einfügungen.
+**Zweck:** Freunde-Button (mit Benachrichtigungspunkt) in der Icon-Reihe,
+ungelesene Benachrichtigungen auf der Startseite, und derselbe rote Punkt
+jetzt auch am Garten-Icon, wenn eine trainierte Blume noch aufs
+Einpflanzen wartet. Die gesamte Logik liegt in
+`blumengarten/freunde/DashboardFriends.tsx` bzw.
+`blumengarten/DashboardGardenButton.tsx` – das Dashboard bekommt nur
+Import + Austausch der bestehenden Icon-Elemente.
 
-### Änderung 1 – Import (neue Zeile 5, direkt nach dem `saveDailyEntry`-Import)
+### Änderung 1 – Imports (neue Zeilen 5–6, direkt nach dem `saveDailyEntry`-Import)
 
 ```tsx
 import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
+import DashboardGardenButton from '../blumengarten/DashboardGardenButton';
 ```
 
-### Änderung 2 – Freunde-Button (neue Zeilen 127–129, direkt nach dem schließenden `</Link>` des Training-Icons, vor dem `</div>` der Icon-Reihe)
+### Änderung 2 – Garten-Icon ersetzt (bisheriges `<Link href="/blumengarten">`-Markup entfernt, durch eine Zeile ersetzt)
+
+Vorher stand hier das komplette Garten-Icon-Markup direkt im Dashboard
+(SVG, Link, Label). Es wurde 1:1 in `DashboardGardenButton.tsx`
+übernommen und hier durch die Komponente ersetzt:
+
+```tsx
+          {/* Blumengarten-Icon (Logik liegt in blumengarten/DashboardGardenButton.tsx) */}
+          <DashboardGardenButton />
+```
+
+`DashboardGardenButton` rendert exakt dasselbe Icon wie vorher (gleiches
+SVG, gleicher Link, gleiches Label „Garten") und zeigt zusätzlich denselben
+roten Punkt-Stil wie beim Freunde-Icon, sobald `localStorage` einen
+gewählten, noch nicht gepflanzten Trainings-Blumentyp enthält.
+
+### Änderung 3 – Freunde-Button (neue Zeilen, direkt nach dem schließenden `</Link>` bzw. jetzt `</DashboardGardenButton>`-Aufruf des Training-Icons, vor dem `</div>` der Icon-Reihe)
 
 ```tsx
           {/* Freunde-Icon (Logik liegt in blumengarten/freunde/DashboardFriends.tsx) */}
@@ -32,22 +52,24 @@ Der Button hat denselben Stil wie die Garten-/Training-Icons (12×12,
 runde Ecken, Label in Großbuchstaben) und zeigt einen kleinen rosa Punkt,
 wenn ungelesene Benachrichtigungen vorliegen.
 
-### Änderung 3 – Benachrichtigungs-Banner (neue Zeilen 132–134, direkt nach dem schließenden `</div>` des Header-Bereichs, vor dem Mood-`<form>`)
+### Änderung 4 – Benachrichtigungs-Banner (direkt nach dem schließenden `</div>` des Header-Bereichs, vor dem Mood-`<form>`)
 
 ```tsx
       {/* Ungelesene Freunde-Benachrichtigungen (blumengarten/freunde/DashboardFriends.tsx) */}
       <FriendsNotifications />
 ```
 
-Zeigt bis zu 3 ungelesene „X loves your flower meadow ♥"-Meldungen
-(inkl. mitgeschickter Nachricht) und verlinkt zur Freunde-Seite. Rendert
-`null`, wenn nichts Ungelesenes da ist oder die Migration fehlt – die
-Startseite sieht dann exakt aus wie vorher.
+Zeigt bis zu 3 ungelesene Meldungen (Likes, Freundschaftsanfragen,
+Annahmen) und verlinkt zur Freunde-Seite. Rendert `null`, wenn nichts
+Ungelesenes da ist oder die Migration fehlt – die Startseite sieht dann
+exakt aus wie vorher.
 
-**Nicht verändert:** Begrüßung, Mood-Formular, Insights-Graph, alle
-bestehenden Icons und Links. (Hinweis: Die zwei bestehenden
-ESLint-`no-explicit-any`-Fehler in Zeile 21/38 waren schon vor unseren
-Änderungen da und stammen nicht von uns.)
+**Nicht verändert:** Begrüßung, Mood-Formular, Insights-Graph,
+Einstellungs- und Training-Icon. Das Garten-Icon sieht optisch identisch
+aus wie vorher (gleiches SVG, gleicher Link, gleiches Label), nur die
+Implementierung wanderte in eine eigene Komponente. (Hinweis: Der
+bestehende ESLint-`no-explicit-any`-Fehler in `getTrainingStats` war schon
+vor unseren Änderungen da und stammt nicht von uns.)
 
 ---
 

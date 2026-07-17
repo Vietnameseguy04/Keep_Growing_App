@@ -53,6 +53,9 @@ function useUnreadNotifications() {
         .order("created_at", { ascending: false })
         .limit(5);
 
+      if (error) {
+        console.error("Could not load notifications:", error);
+      }
       if (error || !data || !active) return;
       setUnread(data);
 

@@ -85,6 +85,25 @@ Ohne Migration läuft der restliche Blumengarten normal weiter;
 Freunde-Seiten, Dashboard-Widgets und Reset zeigen dann einen Hinweis
 bzw. bleiben unsichtbar.
 
+### Falls der rosa Punkt / das Banner trotzdem nicht auftaucht
+
+Wichtig zu wissen: Eine Benachrichtigung geht immer an die **andere**
+Person, nie an dich selbst. Wer eine Anfrage schickt oder annimmt, sieht
+bei sich nichts – nur die Gegenseite bekommt den Hinweis. Zum Testen
+braucht es also zwei Konten (z.B. ein zweites Testkonto).
+
+Kommt trotzdem nichts an, obwohl die Migration lief:
+1. Browser-Konsole öffnen (F12 → Console) beim Laden von Dashboard oder
+   Freunde-Seite. Fehler beim Laden der Benachrichtigungen werden dort
+   jetzt protokolliert (`Could not load notifications: ...`) statt
+   stillschweigend zu verschwinden.
+2. Im Supabase-Dashboard unter **Table Editor → notifications** prüfen,
+   ob nach einer Aktion (Like, Anfrage, Annahme) überhaupt eine neue
+   Zeile für die erwartete Person entsteht. Wenn nicht, ist es ein
+   Datenbank-/Trigger-Problem (Migration nochmal ausführen); wenn ja,
+   aber sie taucht in der App nicht auf, bitte den Konsolen-Fehler aus
+   Schritt 1 schicken.
+
 ## 📋 Änderungen außerhalb von `blumengarten/` (zur Absprache)
 
 **Jede einzelne geänderte Codezeile ist in
@@ -93,7 +112,7 @@ Zusammenfassung:
 
 | Ort | Was | Warum |
 | --- | --- | --- |
-| `dashboard/page.tsx` (Startseite) | 3 additive Einfügungen: Import, `<FriendsButton />`, `<FriendsNotifications />` | Freunde-Button mit Benachrichtigungspunkt + Benachrichtigungen auf der Startseite |
+| `dashboard/page.tsx` (Startseite) | Import + `<FriendsButton />` + `<FriendsNotifications />` additiv; bisheriges Garten-Icon-Markup 1:1 nach `DashboardGardenButton.tsx` verschoben und dort durch die Komponente ersetzt | Freunde-Button mit Benachrichtigungspunkt, Benachrichtigungen auf der Startseite, und derselbe rote Punkt jetzt auch am Garten-Icon, wenn eine Blume aufs Einpflanzen wartet |
 | `einstellungen/page.tsx` | Neue Sektion „Flower garden" mit „Reset your garden" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
 | `src/app/layout.tsx` | 2 additive Zeilen: Import + `<LikeNotifications />` | Browser-Benachrichtigungen auf jeder Seite |
 | `public/images/flower-real-1..4.png`, `wildblume-1..4.svg` | 8 neue Bild-Dateien | Zwei umschaltbare Blumen-Stile; alte `flower-*.png` bleiben unangetastet |
