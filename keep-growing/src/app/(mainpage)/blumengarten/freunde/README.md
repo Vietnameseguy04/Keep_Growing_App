@@ -32,15 +32,19 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
   ältere bleiben als Archiv in der Datenbank. Manuell zurücksetzen geht
   **nur in den Einstellungen** (nicht mehr im Garten selbst).
 - **Sponsoring-Link**: „More info." verlinkt auf die Blühpatenschaften
-  des Netzwerks Blühende Landschaft (Mellifera e.V.):
-  <https://bluehende-landschaft.de/bluehpatenschaften-mit-echter-wirkung/>
+  von Plantlifes „Save the Last Meadows"-Spendenaufruf (englisch,
+  passend zum englischen App-Text):
+  <https://www.plantlife.org.uk/donations/save-the-last-meadows/>
 
 ### Neuer Ordner `blumengarten/freunde/`
 - `page.tsx` – Freunde verwalten: per E-Mail suchen und Anfrage senden,
-  Anfragen annehmen/ablehnen, Freundesliste, Benachrichtigungen
-  („X loves your flower meadow ♥" inkl. mitgeschickter Nachricht),
-  Browser-Benachrichtigungen aktivieren.
-- `[friendId]/page.tsx` – Blumenwiese einer Freundin/eines Freundes
+  Anfragen annehmen/ablehnen (gesendete auch zurückziehen), Freunde
+  wieder entfernen, Freundesliste, Benachrichtigungen für Likes UND für
+  neue/angenommene Freundschaftsanfragen (einzeln löschbar oder alle auf
+  einmal), Browser-Benachrichtigungen aktivieren. Der Zurück-Pfeil geht
+  jetzt per `router.back()` dorthin zurück, von wo man kam (Dashboard
+  oder Garten), statt fest auf den Garten verdrahtet zu sein.
+- `[friendId]/page.tsx` – Blumengarten einer Freundin/eines Freundes
   besuchen (nur lesend). **Like mit Nachricht:** Herz antippen → optional
   eine kurze Nachricht schreiben → absenden. Danach springt das Herz
   zurück, sodass später erneut geliked werden kann. Jedes Like erzeugt
@@ -48,8 +52,10 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
 - `DashboardFriends.tsx` – die zwei Widgets für die Startseite
   (Freunde-Button mit Punkt, Benachrichtigungs-Banner).
 - `LikeNotifications.tsx` – globaler Realtime-Listener für
-  Browser-Benachrichtigungen (im Root-Layout eingebunden).
-- `supabase-migration.sql` – die komplette Datenbank-Migration (s.u.).
+  Browser-Benachrichtigungen (im Root-Layout eingebunden). Zeigt jetzt
+  auch Freundschaftsanfragen und -Annahmen an, nicht nur Likes.
+- `supabase-migration.sql` – die komplette Datenbank-Migration (s.u.),
+  inklusive Trigger für Freundschaftsanfrage/-Annahme.
 
 Neu im Garten selbst: Liegt aus dem Training noch eine ungepflanzte
 Blume bereit, zeigt der Garten oben einen Hinweis im gleichen
@@ -59,6 +65,8 @@ einmal warten (wie schon vorher über `localStorage`) – für mehrere
 gleichzeitig bräuchte es eine eigene Warteliste in der Datenbank statt
 des einen gespeicherten Blumennamens, das wäre für den Nutzen aktuell zu
 viel Aufwand.
+
+## ⚠️ Vor dem Testen: Datenbank-Migration ausführen
 
 1. Supabase-Dashboard öffnen → **SQL Editor** → **New query**
 2. Kompletten Inhalt von `supabase-migration.sql` einfügen → **Run**
@@ -77,6 +85,25 @@ Ohne Migration läuft der restliche Blumengarten normal weiter;
 Freunde-Seiten, Dashboard-Widgets und Reset zeigen dann einen Hinweis
 bzw. bleiben unsichtbar.
 
+### Falls der rosa Punkt / das Banner trotzdem nicht auftaucht
+
+Wichtig zu wissen: Eine Benachrichtigung geht immer an die **andere**
+Person, nie an dich selbst. Wer eine Anfrage schickt oder annimmt, sieht
+bei sich nichts – nur die Gegenseite bekommt den Hinweis. Zum Testen
+braucht es also zwei Konten (z.B. ein zweites Testkonto).
+
+Kommt trotzdem nichts an, obwohl die Migration lief:
+1. Browser-Konsole öffnen (F12 → Console) beim Laden von Dashboard oder
+   Freunde-Seite. Fehler beim Laden der Benachrichtigungen werden dort
+   jetzt protokolliert (`Could not load notifications: ...`) statt
+   stillschweigend zu verschwinden.
+2. Im Supabase-Dashboard unter **Table Editor → notifications** prüfen,
+   ob nach einer Aktion (Like, Anfrage, Annahme) überhaupt eine neue
+   Zeile für die erwartete Person entsteht. Wenn nicht, ist es ein
+   Datenbank-/Trigger-Problem (Migration nochmal ausführen); wenn ja,
+   aber sie taucht in der App nicht auf, bitte den Konsolen-Fehler aus
+   Schritt 1 schicken.
+
 ## 📋 Änderungen außerhalb von `blumengarten/` (zur Absprache)
 
 **Jede einzelne geänderte Codezeile ist in
@@ -85,9 +112,10 @@ Zusammenfassung:
 
 | Ort | Was | Warum |
 | --- | --- | --- |
-| `dashboard/page.tsx` (Startseite) | 3 additive Einfügungen: Import, `<FriendsButton />`, `<FriendsNotifications />` | Freunde-Button mit Benachrichtigungspunkt + Benachrichtigungen auf der Startseite |
-| `einstellungen/page.tsx` | Neue Sektion „Flower meadow" mit „Reset your meadow" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
+| `dashboard/page.tsx` (Startseite) | Import + `<FriendsButton />` + `<FriendsNotifications />` additiv; bisheriges Garten-Icon-Markup 1:1 nach `DashboardGardenButton.tsx` verschoben und dort durch die Komponente ersetzt | Freunde-Button mit Benachrichtigungspunkt, Benachrichtigungen auf der Startseite, und derselbe rote Punkt jetzt auch am Garten-Icon, wenn eine Blume aufs Einpflanzen wartet |
+| `einstellungen/page.tsx` | Neue Sektion „Flower garden" mit „Reset your garden" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
 | `src/app/layout.tsx` | 2 additive Zeilen: Import + `<LikeNotifications />` | Browser-Benachrichtigungen auf jeder Seite |
+| `src/app/global-error.tsx` (neu) | Neue Datei | Fängt den wiederkehrenden `ChunkLoadError` nach einem neuen Deploy ab und lädt die Seite automatisch einmal neu, statt die rote Fehlerseite zu zeigen |
 | `public/images/flower-real-1..4.png`, `wildblume-1..4.svg` | 8 neue Bild-Dateien | Zwei umschaltbare Blumen-Stile; alte `flower-*.png` bleiben unangetastet |
 | Supabase (Datenbank) | `supabase-migration.sql` | Freunde-System, Likes mit Nachricht, Benachrichtigungen, Reset. **Vor dem Ausführen im Team absprechen.** |
 
