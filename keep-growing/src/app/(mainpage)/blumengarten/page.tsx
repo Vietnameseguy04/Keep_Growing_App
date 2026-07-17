@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { flowerImageById, flowerTitleById } from "./flowers";
 
 type SavedFlower = {
   id: string;
@@ -22,20 +23,13 @@ type PendingFlower = {
 
 type GardenMode = "view" | "place-new" | "edit-select" | "edit-move";
 
-const flowerImages: Record<string, string> = {
-  creativityWarmth: "/images/flower-1.png",
-  imaginativeTraining: "/images/flower-2.png",
-  innerPeace: "/images/flower-3.png",
-  selfEmpowerment: "/images/flower-4.png",
-};
-
 export default function BlumengartenPage() {
   const router = useRouter();
   const supabase = createClient();
   const gardenRef = useRef<HTMLDivElement>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState("johanna");
+  const [userName, setUserName] = useState("friend");
   const [flowers, setFlowers] = useState<SavedFlower[]>([]);
   const [selectedFlowerType, setSelectedFlowerType] = useState<string | null>(
     null,
@@ -82,7 +76,7 @@ export default function BlumengartenPage() {
       }
 
       setUserId(user.id);
-      setUserName((user.user_metadata.full_name || "johanna").toLowerCase());
+      setUserName((user.user_metadata.full_name || "friend").toLowerCase());
 
       const { data, error } = await supabase
         .from("flower_garden")
@@ -111,7 +105,7 @@ export default function BlumengartenPage() {
 
     return {
       x: Math.max(0.08, Math.min(0.92, rawX)),
-      y: Math.max(0.14, Math.min(0.92, rawY)),
+      y: Math.max(0.45, Math.min(0.92, rawY)),
     };
   }
 
@@ -232,6 +226,13 @@ export default function BlumengartenPage() {
     setMode("view");
   }
 
+  function handleCancelPlaceNew() {
+    setPendingNewFlower(null);
+    setSelectedFlowerType(null);
+    localStorage.removeItem("selectedFlower");
+    setMode("view");
+  }
+
   function handleLeaveGarden() {
     router.push("/dashboard");
   }
@@ -288,6 +289,16 @@ export default function BlumengartenPage() {
               </button>
             )}
 
+            {mode === "place-new" && (
+              <button
+                type="button"
+                onClick={handleCancelPlaceNew}
+                className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
+              >
+                Cancel
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleLeaveGarden}
@@ -311,9 +322,9 @@ export default function BlumengartenPage() {
           </div>
         </div>
 
-        <div className="mb-8 rounded-[22px] bg-[#ebe5df] px-5 py-4 text-center">
-          <p className="text-[14px] leading-6 text-[#5e5357]">{infoText}</p>
-        </div>
+        <p className="mb-8 px-4 text-center text-[14px] leading-6 text-[#5e5357]">
+          {infoText}
+        </p>
 
         <div
           ref={gardenRef}
@@ -322,7 +333,9 @@ export default function BlumengartenPage() {
         >
           {flowers.map((flower) => {
             const imageSrc =
-              flowerImages[flower.flower_type] ?? "/images/flower-1.png";
+              flowerImageById[flower.flower_type] ?? "/images/flower-1.png";
+            const flowerTitle =
+              flowerTitleById[flower.flower_type] ?? flower.flower_type;
             const isEditingSelected = editingFlowerId === flower.id;
 
             const previewX =
@@ -352,8 +365,8 @@ export default function BlumengartenPage() {
               >
                 <img
                   src={imageSrc}
-                  alt={flower.flower_type}
-                  className={`w-[110px] object-contain transition ${
+                  alt={flowerTitle}
+                  className={`w-[84px] object-contain transition ${
                     isEditingSelected ? "scale-105 opacity-80" : ""
                   }`}
                 />
@@ -364,11 +377,11 @@ export default function BlumengartenPage() {
           {pendingNewFlower && mode === "place-new" && (
             <img
               src={
-                flowerImages[pendingNewFlower.flower_type] ??
+                flowerImageById[pendingNewFlower.flower_type] ??
                 "/images/flower-1.png"
               }
               alt="New flower preview"
-              className="pointer-events-none absolute w-[110px] object-contain opacity-80"
+              className="pointer-events-none absolute w-[84px] object-contain opacity-80"
               style={{
                 left: `${pendingNewFlower.x * 100}%`,
                 top: `${pendingNewFlower.y * 100}%`,
@@ -422,15 +435,13 @@ export default function BlumengartenPage() {
         )}
 
         {mode === "view" && (
-          <div className="mt-6 rounded-[22px] bg-[#ebe5df] px-5 py-4 text-center">
-            <p className="text-[15px] leading-6 text-[#5e5357]">
-              Make a difference! Support biodiversity
-              <br />
-              with a wildflower meadow sponsorship
-              <br />
-              for 2,99 $. More info.
-            </p>
-          </div>
+          <p className="mt-6 px-4 text-center text-[15px] leading-6 text-[#5e5357]">
+            Make a difference! Support biodiversity
+            <br />
+            with a wildflower meadow sponsorship
+            <br />
+            for 2,99 $. More info.
+          </p>
         )}
 
         <div className="mt-6 text-center">

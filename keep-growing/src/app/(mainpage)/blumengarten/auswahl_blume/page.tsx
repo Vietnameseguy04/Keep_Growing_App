@@ -1,56 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-type FlowerType =
-  | "creativityWarmth"
-  | "imaginativeTraining"
-  | "innerPeace"
-  | "selfEmpowerment";
-
-type FlowerOption = {
-  id: FlowerType;
-  title: string;
-  description: string;
-  image: string;
-};
-
-const flowerOptions: FlowerOption[] = [
-  {
-    id: "creativityWarmth",
-    title: "Creativity & warmth",
-    description: "A soft flower for calm and positive energy.",
-    image: "/images/flower-1.png",
-  },
-  {
-    id: "imaginativeTraining",
-    title: "Imaginative training",
-    description: "A bright flower for focus and imagination.",
-    image: "/images/flower-2.png",
-  },
-  {
-    id: "innerPeace",
-    title: "Inner peace",
-    description: "A gentle flower for quiet and balance.",
-    image: "/images/flower-3.png",
-  },
-  {
-    id: "selfEmpowerment",
-    title: "Self-empowerment",
-    description: "A strong flower for confidence and growth.",
-    image: "/images/flower-4.png",
-  },
-];
+import { flowerOptions, type FlowerId } from "../flowers";
 
 export default function FlowerSelectionPage() {
   const router = useRouter();
-  const [selectedFlower, setSelectedFlower] = useState<FlowerType | null>(null);
 
-  function handleContinue() {
-    if (!selectedFlower) return;
+  function handleSelect(flowerId: FlowerId) {
+    localStorage.setItem("selectedFlower", flowerId);
+    router.push("/blumengarten");
+  }
 
-    localStorage.setItem("selectedFlower", selectedFlower);
+  function handleSkip() {
+    localStorage.removeItem("selectedFlower");
     router.push("/blumengarten");
   }
 
@@ -60,80 +22,68 @@ export default function FlowerSelectionPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-6 text-sm text-[#b57a84] font-semibold hover:underline"
+          aria-label="Back"
+          className="mb-6 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
         >
-          ← Back
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#b57a84"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
 
-        <div className="mb-8 rounded-3xl bg-[#f2ebe8] px-6 py-5 text-center shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Choose your flower
+        <div className="mb-10 rounded-3xl bg-[#f2ebe8] px-6 py-5 text-center shadow-sm">
+          <h1 className="text-lg font-bold leading-7 text-[#7a4a58]">
+            Choose your autogenic training for today and let your mind grow
           </h1>
-          <p className="text-sm text-gray-600 leading-6">
-            Select one flower as your reward and place it in your flower garden.
-          </p>
         </div>
 
-        <div className="space-y-4">
-          {flowerOptions.map((flower) => {
-            const isSelected = selectedFlower === flower.id;
-
-            return (
-              <button
-                key={flower.id}
-                type="button"
-                onClick={() => setSelectedFlower(flower.id)}
-                className={`w-full rounded-3xl border p-4 text-left transition-all shadow-sm ${
-                  isSelected
-                    ? "border-[#b57a84] bg-[#f6e8ec] ring-2 ring-[#d9aeb8]"
-                    : "border-[#ece7e3] bg-white hover:bg-[#fcf8f9]"
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center">
-                    <img
-                      src={flower.image}
-                      alt={flower.title}
-                      className="h-24 object-contain"
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h2 className="text-base font-semibold text-gray-800">
-                          {flower.title}
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-500 leading-5">
-                          {flower.description}
-                        </p>
-                      </div>
-
-                      <div
-                        className={`mt-1 h-5 w-5 rounded-full border-2 flex items-center justify-center text-xs ${
-                          isSelected
-                            ? "border-[#b57a84] bg-[#b57a84] text-white"
-                            : "border-gray-300 bg-white text-transparent"
-                        }`}
-                      >
-                        ✓
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        <div className="space-y-5">
+          {flowerOptions.map((flower) => (
+            <button
+              key={flower.id}
+              type="button"
+              onClick={() => handleSelect(flower.id)}
+              className="flex w-full items-center gap-4 text-left"
+            >
+              <img
+                src={flower.image}
+                alt=""
+                className="h-14 w-14 shrink-0 object-contain"
+              />
+              <span className="flex-1 rounded-full bg-[#c08a95] px-5 py-3 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#b67f8a]">
+                {flower.title}
+              </span>
+            </button>
+          ))}
         </div>
 
-        <button
-          type="button"
-          onClick={handleContinue}
-          disabled={!selectedFlower}
-          className="mt-8 w-full rounded-2xl bg-[#b57a84] px-6 py-4 text-white font-bold shadow-md transition-all hover:bg-[#a36972] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#d8c7cb]"
-        >
-          Place flower in garden
-        </button>
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="text-[13px] text-[#4f6175] underline underline-offset-2"
+          >
+            go directly to your flower meadow
+          </button>
+        </div>
+
+        <div className="mt-10 text-center">
+          <button
+            type="button"
+            onClick={() => router.push("/impressum")}
+            className="text-[11px] text-[#4f6175] underline underline-offset-2"
+          >
+            About us
+          </button>
+        </div>
       </div>
     </main>
   );
