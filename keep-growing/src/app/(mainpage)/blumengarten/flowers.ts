@@ -10,17 +10,27 @@ export type FlowerOption = {
   image: string;
 };
 
-// Two interchangeable art styles live in public/images:
-//   "real"       – the client's watercolor flowers, extracted from the
-//                  design PDF (flower-real-1..4.png)
-//   "watercolor" – hand-built SVG wildflowers with stems (wildblume-1..4.svg)
+// Three interchangeable art styles live in public/images:
+//   "pressed"    – realistic pressed flowers WITH stems, extracted from
+//                  the garden mockups in the client's design PDF
+//                  (flower-pressed-1..4.png)
+//   "blossom"    – the client's watercolor blossom heads from the
+//                  selection-screen mockup (flower-real-1..4.png)
+//   "watercolor" – hand-built SVG wildflowers with stems
+//                  (wildblume-1..4.svg)
 // Switch styles by changing FLOWER_STYLE – nothing else needs to change.
-export type FlowerStyle = "real" | "watercolor";
+export type FlowerStyle = "pressed" | "blossom" | "watercolor";
 
-export const FLOWER_STYLE: FlowerStyle = "real";
+export const FLOWER_STYLE: FlowerStyle = "pressed";
 
 const imagesByStyle: Record<FlowerStyle, Record<FlowerId, string>> = {
-  real: {
+  pressed: {
+    creativityWarmth: "/images/flower-pressed-1.png",
+    imaginativeTraining: "/images/flower-pressed-2.png",
+    innerPeace: "/images/flower-pressed-3.png",
+    selfEmpowerment: "/images/flower-pressed-4.png",
+  },
+  blossom: {
     creativityWarmth: "/images/flower-real-1.png",
     imaginativeTraining: "/images/flower-real-2.png",
     innerPeace: "/images/flower-real-3.png",
