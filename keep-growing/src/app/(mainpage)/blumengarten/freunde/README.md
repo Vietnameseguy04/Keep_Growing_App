@@ -115,6 +115,7 @@ Zusammenfassung:
 | `dashboard/page.tsx` (Startseite) | Import + `<FriendsButton />` + `<FriendsNotifications />` additiv; bisheriges Garten-Icon-Markup 1:1 nach `DashboardGardenButton.tsx` verschoben und dort durch die Komponente ersetzt | Freunde-Button mit Benachrichtigungspunkt, Benachrichtigungen auf der Startseite, und derselbe rote Punkt jetzt auch am Garten-Icon, wenn eine Blume aufs Einpflanzen wartet |
 | `einstellungen/page.tsx` | Neue Sektion „Flower garden" mit „Reset your garden" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
 | `src/app/layout.tsx` | 2 additive Zeilen: Import + `<LikeNotifications />` | Browser-Benachrichtigungen auf jeder Seite |
+| `src/app/global-error.tsx` (neu) | Neue Datei | Fängt den wiederkehrenden `ChunkLoadError` nach einem neuen Deploy ab und lädt die Seite automatisch einmal neu, statt die rote Fehlerseite zu zeigen |
 | `public/images/flower-real-1..4.png`, `wildblume-1..4.svg` | 8 neue Bild-Dateien | Zwei umschaltbare Blumen-Stile; alte `flower-*.png` bleiben unangetastet |
 | Supabase (Datenbank) | `supabase-migration.sql` | Freunde-System, Likes mit Nachricht, Benachrichtigungen, Reset. **Vor dem Ausführen im Team absprechen.** |
 
