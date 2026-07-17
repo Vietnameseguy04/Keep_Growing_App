@@ -34,6 +34,21 @@ function displayName(profile: Profile | undefined): string {
   return profile.full_name?.trim() || profile.email || "Someone";
 }
 
+// One place to turn a notification row into its display text, so the
+// friends page and the dashboard banner (DashboardFriends.tsx) agree on
+// wording for every notification type.
+function notificationText(type: string, actorName: string): string {
+  switch (type) {
+    case "friend_request":
+      return `${actorName} sent you a friend request`;
+    case "friend_accepted":
+      return `${actorName} accepted your friend request`;
+    case "garden_like":
+    default:
+      return `${actorName} loves your flower garden`;
+  }
+}
+
 export default function FriendsPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -351,8 +366,8 @@ export default function FriendsPage() {
         <div className="mb-2 flex items-start justify-between gap-3">
           <button
             type="button"
-            onClick={() => router.push("/blumengarten")}
-            aria-label="Back to your flower garden"
+            onClick={() => router.back()}
+            aria-label="Back"
             className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
           >
             <svg
@@ -454,15 +469,22 @@ export default function FriendsPage() {
                   }`}
                 >
                   <span>
-                    {displayName(
-                      notification.actor_id
-                        ? profiles[notification.actor_id]
-                        : undefined,
-                    )}{" "}
-                    loves your flower garden{" "}
-                    <span aria-hidden="true" className="text-[#c08a95]">
-                      ♥
-                    </span>
+                    {notificationText(
+                      notification.type,
+                      displayName(
+                        notification.actor_id
+                          ? profiles[notification.actor_id]
+                          : undefined,
+                      ),
+                    )}
+                    {notification.type === "garden_like" && (
+                      <>
+                        {" "}
+                        <span aria-hidden="true" className="text-[#c08a95]">
+                          ♥
+                        </span>
+                      </>
+                    )}
                     {notification.message && (
                       <span className="mt-1 block text-[13px] italic text-[#8a7d81]">
                         &ldquo;{notification.message}&rdquo;

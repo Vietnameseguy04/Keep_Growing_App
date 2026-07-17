@@ -39,10 +39,11 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
 ### Neuer Ordner `blumengarten/freunde/`
 - `page.tsx` – Freunde verwalten: per E-Mail suchen und Anfrage senden,
   Anfragen annehmen/ablehnen (gesendete auch zurückziehen), Freunde
-  wieder entfernen, Freundesliste, Benachrichtigungen
-  („X loves your flower garden ♥" inkl. mitgeschickter Nachricht,
-  einzeln löschbar oder alle auf einmal), Browser-Benachrichtigungen
-  aktivieren.
+  wieder entfernen, Freundesliste, Benachrichtigungen für Likes UND für
+  neue/angenommene Freundschaftsanfragen (einzeln löschbar oder alle auf
+  einmal), Browser-Benachrichtigungen aktivieren. Der Zurück-Pfeil geht
+  jetzt per `router.back()` dorthin zurück, von wo man kam (Dashboard
+  oder Garten), statt fest auf den Garten verdrahtet zu sein.
 - `[friendId]/page.tsx` – Blumengarten einer Freundin/eines Freundes
   besuchen (nur lesend). **Like mit Nachricht:** Herz antippen → optional
   eine kurze Nachricht schreiben → absenden. Danach springt das Herz
@@ -51,8 +52,19 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
 - `DashboardFriends.tsx` – die zwei Widgets für die Startseite
   (Freunde-Button mit Punkt, Benachrichtigungs-Banner).
 - `LikeNotifications.tsx` – globaler Realtime-Listener für
-  Browser-Benachrichtigungen (im Root-Layout eingebunden).
-- `supabase-migration.sql` – die komplette Datenbank-Migration (s.u.).
+  Browser-Benachrichtigungen (im Root-Layout eingebunden). Zeigt jetzt
+  auch Freundschaftsanfragen und -Annahmen an, nicht nur Likes.
+- `supabase-migration.sql` – die komplette Datenbank-Migration (s.u.),
+  inklusive Trigger für Freundschaftsanfrage/-Annahme.
+
+Neu im Garten selbst: Liegt aus dem Training noch eine ungepflanzte
+Blume bereit, zeigt der Garten oben einen Hinweis im gleichen
+Benachrichtigungs-Look wie bei den Freunden ("Your new flower is ready
+to plant!"). Bewusst einfach gehalten: Es kann immer nur eine Blume auf
+einmal warten (wie schon vorher über `localStorage`) – für mehrere
+gleichzeitig bräuchte es eine eigene Warteliste in der Datenbank statt
+des einen gespeicherten Blumennamens, das wäre für den Nutzen aktuell zu
+viel Aufwand.
 
 ## ⚠️ Vor dem Testen: Datenbank-Migration ausführen
 
