@@ -51,7 +51,14 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
   Browser-Benachrichtigungen (im Root-Layout eingebunden).
 - `supabase-migration.sql` – die komplette Datenbank-Migration (s.u.).
 
-## ⚠️ Vor dem Testen: Datenbank-Migration ausführen
+Neu im Garten selbst: Liegt aus dem Training noch eine ungepflanzte
+Blume bereit, zeigt der Garten oben einen Hinweis im gleichen
+Benachrichtigungs-Look wie bei den Freunden ("Your new flower is ready
+to plant!"). Bewusst einfach gehalten: Es kann immer nur eine Blume auf
+einmal warten (wie schon vorher über `localStorage`) – für mehrere
+gleichzeitig bräuchte es eine eigene Warteliste in der Datenbank statt
+des einen gespeicherten Blumennamens, das wäre für den Nutzen aktuell zu
+viel Aufwand.
 
 1. Supabase-Dashboard öffnen → **SQL Editor** → **New query**
 2. Kompletten Inhalt von `supabase-migration.sql` einfügen → **Run**

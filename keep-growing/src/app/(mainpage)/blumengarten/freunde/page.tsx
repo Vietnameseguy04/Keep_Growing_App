@@ -51,6 +51,9 @@ export default function FriendsPage() {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | "unsupported"
   >("unsupported");
+  const [removingFriendId, setRemovingFriendId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -112,12 +115,19 @@ export default function FriendsPage() {
       const loadedFriendships = friendshipData ?? [];
       setFriendships(loadedFriendships);
 
-      const { data: notificationData } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const { data: notificationData, error: notificationError } =
+        await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+      if (notificationError) {
+        // Don't block the whole page over this - friends/requests still
+        // work - but log it so a migration/RLS problem doesn't fail silently.
+        console.error("Could not load notifications:", notificationError);
+      }
 
       const loadedNotifications = notificationData ?? [];
       setNotifications(loadedNotifications);
@@ -275,6 +285,54 @@ export default function FriendsPage() {
     }
   }
 
+  async function handleDeleteNotification(id: string) {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id);
+
+    if (!error) {
+      setNotifications((prev) =>
+        prev.filter((notification) => notification.id !== id),
+      );
+    }
+  }
+
+  async function handleClearNotifications() {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (!error) {
+      setNotifications([]);
+    }
+  }
+
+  async function handleRemoveFriend(friendship: Friendship) {
+    setBusy(true);
+    setErrorMessage(null);
+
+    const { error } = await supabase
+      .from("friendships")
+      .delete()
+      .eq("id", friendship.id);
+
+    if (error) {
+      setErrorMessage("The friend could not be removed.");
+      setBusy(false);
+      return;
+    }
+
+    setFriendships((prev) =>
+      prev.filter((entry) => entry.id !== friendship.id),
+    );
+    setRemovingFriendId(null);
+    setBusy(false);
+  }
+
   const incomingRequests = friendships.filter(
     (entry) => entry.status === "pending" && entry.addressee_id === userId,
   );
@@ -373,21 +431,30 @@ export default function FriendsPage() {
                   </span>
                 )}
               </h3>
-              {unreadCount > 0 && (
+              <span className="flex gap-3">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    className="text-[12px] text-[#a29599] underline underline-offset-2 hover:text-[#c08a95]"
+                  >
+                    Mark all as read
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleMarkAllRead}
+                  onClick={handleClearNotifications}
                   className="text-[12px] text-[#a29599] underline underline-offset-2 hover:text-[#c08a95]"
                 >
                   Mark all as read
                 </button>
-              )}
+              </span>
             </div>
             <ul className="space-y-2">
               {notifications.slice(0, 5).map((notification) => (
                 <li
                   key={notification.id}
-                  className={`rounded-[18px] px-4 py-3 text-[14px] leading-6 ${
+                  className={`flex items-start justify-between gap-3 rounded-[18px] px-4 py-3 text-[14px] leading-6 ${
                     notification.read
                       ? "bg-[#f1ece9] text-[#8a7d81]"
                       : "bg-[#f6e7ea] text-[#5e5357]"

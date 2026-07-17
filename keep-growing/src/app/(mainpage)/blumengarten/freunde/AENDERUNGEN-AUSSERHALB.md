@@ -1,10 +1,11 @@
 # Änderungen außerhalb von `blumengarten/` – genaue Zeilen-Dokumentation
 
-Für die Team-Absprache: Diese drei bestehenden Dateien außerhalb des
-Blumengarten-Ordners wurden angepasst. Hier steht **jede geänderte Zeile**
-mit Begründung. Alles andere (neue Seiten, Komponenten, SQL, Bilder) liegt
-als **neue Datei** in `blumengarten/`, `blumengarten/freunde/` oder
-`public/images/` und verändert keinen bestehenden Code.
+Für die Team-Absprache: Diese Dateien außerhalb des Blumengarten-Ordners
+wurden angepasst (drei bestehende Dateien plus eine neue,
+`global-error.tsx`). Hier steht **jede geänderte Zeile** mit Begründung.
+Alles andere (neue Seiten, Komponenten, SQL, Bilder) liegt als **neue
+Datei** in `blumengarten/`, `blumengarten/freunde/` oder `public/images/`
+und verändert keinen bestehenden Code.
 
 ---
 
