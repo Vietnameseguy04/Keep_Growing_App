@@ -1,10 +1,11 @@
 # Änderungen außerhalb von `blumengarten/` – genaue Zeilen-Dokumentation
 
-Für die Team-Absprache: Diese drei bestehenden Dateien außerhalb des
-Blumengarten-Ordners wurden angepasst. Hier steht **jede geänderte Zeile**
-mit Begründung. Alles andere (neue Seiten, Komponenten, SQL, Bilder) liegt
-als **neue Datei** in `blumengarten/`, `blumengarten/freunde/` oder
-`public/images/` und verändert keinen bestehenden Code.
+Für die Team-Absprache: Diese Dateien außerhalb des Blumengarten-Ordners
+wurden angepasst (drei bestehende Dateien plus eine neue,
+`global-error.tsx`). Hier steht **jede geänderte Zeile** mit Begründung.
+Alles andere (neue Seiten, Komponenten, SQL, Bilder) liegt als **neue
+Datei** in `blumengarten/`, `blumengarten/freunde/` oder `public/images/`
+und verändert keinen bestehenden Code.
 
 ---
 
@@ -73,7 +74,27 @@ vor unseren Änderungen da und stammt nicht von uns.)
 
 ---
 
-## 2. `src/app/(mainpage)/einstellungen/page.tsx`
+## 2. `src/app/global-error.tsx` (neue Datei)
+
+**Zweck:** Der `ChunkLoadError`, der immer wieder beim Öffnen/Aktualisieren
+der Seite auftauchte – meist direkt nachdem im Hintergrund ein neuer
+Deploy passiert ist und der Browser noch auf den alten Build zeigt.
+Bisher landete man dabei auf einer roten Next.js-Fehlerseite.
+
+Next.js bietet dafür extra `global-error.tsx`: die einzige Stelle, die
+Fehler abfangen kann, die im Root-Layout selbst passieren (`layout.tsx`,
+z.B. beim Rendern von `<LikeNotifications />`) – ein normales `error.tsx`
+greift dort nicht. Die Datei erkennt speziell `ChunkLoadError` und lädt
+die Seite dann automatisch einmal neu, statt die Fehlerseite zu zeigen.
+Bei jedem anderen (echten) Fehler gibt es weiterhin einen Hinweis mit
+„Erneut versuchen"-Button.
+
+Komplett neue, eigenständige Datei – verändert keine bestehende Zeile in
+`layout.tsx` oder sonst wo.
+
+---
+
+## 3. `src/app/(mainpage)/einstellungen/page.tsx`
 
 **Zweck:** Manueller „Reset your meadow"-Button in den Einstellungen.
 Der Reset-Link im Blumengarten selbst wurde entfernt – zurücksetzen geht
@@ -171,7 +192,7 @@ Logout-Button, Footer.
 
 ---
 
-## 3. `src/app/layout.tsx` (Root-Layout)
+## 4. `src/app/layout.tsx` (Root-Layout)
 
 **Zweck:** Browser-Benachrichtigungen („X loves your flower meadow ♥")
 sollen auf **jeder** Seite ankommen. Die gesamte Logik liegt in
@@ -196,7 +217,7 @@ Styling.
 
 ---
 
-## 4. Verhalten & Grenzen der Benachrichtigungen
+## 5. Verhalten & Grenzen der Benachrichtigungen
 
 - Aktivierung über den Button „Enable" auf der Freunde-Seite
   (`/blumengarten/freunde`) – kein aufdringliches Popup beim Seitenaufruf.
@@ -213,7 +234,7 @@ Styling.
 
 ---
 
-## 5. Checkliste für die Absprache
+## 6. Checkliste für die Absprache
 
 | Datei | Art der Änderung | Risiko |
 | --- | --- | --- |
