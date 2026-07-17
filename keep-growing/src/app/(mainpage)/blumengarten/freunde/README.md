@@ -32,15 +32,18 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
   ältere bleiben als Archiv in der Datenbank. Manuell zurücksetzen geht
   **nur in den Einstellungen** (nicht mehr im Garten selbst).
 - **Sponsoring-Link**: „More info." verlinkt auf die Blühpatenschaften
-  des Netzwerks Blühende Landschaft (Mellifera e.V.):
-  <https://bluehende-landschaft.de/bluehpatenschaften-mit-echter-wirkung/>
+  von Plantlifes „Save the Last Meadows"-Spendenaufruf (englisch,
+  passend zum englischen App-Text):
+  <https://www.plantlife.org.uk/donations/save-the-last-meadows/>
 
 ### Neuer Ordner `blumengarten/freunde/`
 - `page.tsx` – Freunde verwalten: per E-Mail suchen und Anfrage senden,
-  Anfragen annehmen/ablehnen, Freundesliste, Benachrichtigungen
-  („X loves your flower meadow ♥" inkl. mitgeschickter Nachricht),
-  Browser-Benachrichtigungen aktivieren.
-- `[friendId]/page.tsx` – Blumenwiese einer Freundin/eines Freundes
+  Anfragen annehmen/ablehnen (gesendete auch zurückziehen), Freunde
+  wieder entfernen, Freundesliste, Benachrichtigungen
+  („X loves your flower garden ♥" inkl. mitgeschickter Nachricht,
+  einzeln löschbar oder alle auf einmal), Browser-Benachrichtigungen
+  aktivieren.
+- `[friendId]/page.tsx` – Blumengarten einer Freundin/eines Freundes
   besuchen (nur lesend). **Like mit Nachricht:** Herz antippen → optional
   eine kurze Nachricht schreiben → absenden. Danach springt das Herz
   zurück, sodass später erneut geliked werden kann. Jedes Like erzeugt
@@ -79,7 +82,7 @@ Zusammenfassung:
 | Ort | Was | Warum |
 | --- | --- | --- |
 | `dashboard/page.tsx` (Startseite) | 3 additive Einfügungen: Import, `<FriendsButton />`, `<FriendsNotifications />` | Freunde-Button mit Benachrichtigungspunkt + Benachrichtigungen auf der Startseite |
-| `einstellungen/page.tsx` | Neue Sektion „Flower meadow" mit „Reset your meadow" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
+| `einstellungen/page.tsx` | Neue Sektion „Flower garden" mit „Reset your garden" (Server Action); Funktionskopf liest `searchParams` | Manueller Reset – jetzt ausschließlich hier |
 | `src/app/layout.tsx` | 2 additive Zeilen: Import + `<LikeNotifications />` | Browser-Benachrichtigungen auf jeder Seite |
 | `public/images/flower-real-1..4.png`, `wildblume-1..4.svg` | 8 neue Bild-Dateien | Zwei umschaltbare Blumen-Stile; alte `flower-*.png` bleiben unangetastet |
 | Supabase (Datenbank) | `supabase-migration.sql` | Freunde-System, Likes mit Nachricht, Benachrichtigungen, Reset. **Vor dem Ausführen im Team absprechen.** |
