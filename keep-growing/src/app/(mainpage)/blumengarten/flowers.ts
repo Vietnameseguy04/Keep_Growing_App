@@ -10,28 +10,52 @@ export type FlowerOption = {
   image: string;
 };
 
-// Die IDs sind in der Datenbank (flower_garden.flower_type) gespeichert
-// und dürfen nicht verändert werden – nur Titel und Bilder.
+// Two interchangeable art styles live in public/images:
+//   "real"       – the client's watercolor flowers, extracted from the
+//                  design PDF (flower-real-1..4.png)
+//   "watercolor" – hand-built SVG wildflowers with stems (wildblume-1..4.svg)
+// Switch styles by changing FLOWER_STYLE – nothing else needs to change.
+export type FlowerStyle = "real" | "watercolor";
+
+export const FLOWER_STYLE: FlowerStyle = "real";
+
+const imagesByStyle: Record<FlowerStyle, Record<FlowerId, string>> = {
+  real: {
+    creativityWarmth: "/images/flower-real-1.png",
+    imaginativeTraining: "/images/flower-real-2.png",
+    innerPeace: "/images/flower-real-3.png",
+    selfEmpowerment: "/images/flower-real-4.png",
+  },
+  watercolor: {
+    creativityWarmth: "/images/wildblume-1.svg",
+    imaginativeTraining: "/images/wildblume-2.svg",
+    innerPeace: "/images/wildblume-3.svg",
+    selfEmpowerment: "/images/wildblume-4.svg",
+  },
+};
+
+// The ids are stored in the database (flower_garden.flower_type) and
+// must never change – only titles and images may.
 export const flowerOptions: FlowerOption[] = [
   {
     id: "creativityWarmth",
-    title: "Schwere & Wärme",
-    image: "/images/wildblume-1.svg",
+    title: "Gravity & warmth",
+    image: imagesByStyle[FLOWER_STYLE].creativityWarmth,
   },
   {
     id: "imaginativeTraining",
-    title: "Fantasiereise",
-    image: "/images/wildblume-2.svg",
+    title: "Imaginative training",
+    image: imagesByStyle[FLOWER_STYLE].imaginativeTraining,
   },
   {
     id: "innerPeace",
-    title: "Innere Ruhe",
-    image: "/images/wildblume-3.svg",
+    title: "Inner peace",
+    image: imagesByStyle[FLOWER_STYLE].innerPeace,
   },
   {
     id: "selfEmpowerment",
-    title: "Selbststärkung",
-    image: "/images/wildblume-4.svg",
+    title: "Self-empowerment",
+    image: imagesByStyle[FLOWER_STYLE].selfEmpowerment,
   },
 ];
 

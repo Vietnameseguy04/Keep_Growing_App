@@ -3,14 +3,14 @@
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// Lauscht per Supabase Realtime auf neue Einträge in "notifications" und
-// zeigt eine Browser-Benachrichtigung ("X gefällt deine Blumenwiese ♥").
+// Listens via Supabase Realtime for new rows in "notifications" and shows
+// a browser notification ("X loves your flower meadow ♥").
 //
-// Die Komponente rendert nichts und wird einmalig im Root-Layout
-// (src/app/layout.tsx) eingebunden, damit Benachrichtigungen auf jeder
-// Seite ankommen. Aktiv wird sie nur, wenn die Nutzerin die
-// Browser-Berechtigung erteilt hat (Button auf der Freunde-Seite).
-export default function LikeBenachrichtigungen() {
+// The component renders nothing and is mounted once in the root layout
+// (src/app/layout.tsx) so notifications arrive on every page. It only
+// becomes active once the user has granted the browser permission
+// (via the "Enable" button on the friends page).
+export default function LikeNotifications() {
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) {
       return;
@@ -31,7 +31,7 @@ export default function LikeBenachrichtigungen() {
       if (!user || !active) return;
 
       channel = supabase
-        .channel("like-benachrichtigungen")
+        .channel("like-notifications")
         .on(
           "postgres_changes",
           {
@@ -41,23 +41,29 @@ export default function LikeBenachrichtigungen() {
             filter: `user_id=eq.${user.id}`,
           },
           async (payload) => {
-            const actorId = (payload.new as { actor_id: string | null })
-              .actor_id;
+            const row = payload.new as {
+              actor_id: string | null;
+              message: string | null;
+            };
 
-            let actorName = "Jemand";
-            if (actorId) {
+            let actorName = "Someone";
+            if (row.actor_id) {
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("full_name, email")
-                .eq("id", actorId)
+                .eq("id", row.actor_id)
                 .maybeSingle();
               actorName =
-                profile?.full_name?.trim() || profile?.email || "Jemand";
+                profile?.full_name?.trim() || profile?.email || "Someone";
             }
 
+            const body = row.message
+              ? `${actorName} loves your flower meadow ♥ "${row.message}"`
+              : `${actorName} loves your flower meadow ♥`;
+
             new Notification("Keep Growing", {
-              body: `${actorName} gefällt deine Blumenwiese ♥`,
-              icon: "/images/wildblume-3.svg",
+              body,
+              icon: "/images/flower-real-3.png",
             });
           },
         )
@@ -66,13 +72,13 @@ export default function LikeBenachrichtigungen() {
 
     subscribe();
 
-    // Wird von der Freunde-Seite ausgelöst, sobald die Berechtigung
-    // erteilt wurde – so muss die Seite nicht neu geladen werden.
-    window.addEventListener("kg-benachrichtigungen-aktiviert", subscribe);
+    // Fired by the friends page as soon as permission is granted – so no
+    // page reload is needed.
+    window.addEventListener("kg-notifications-enabled", subscribe);
 
     return () => {
       active = false;
-      window.removeEventListener("kg-benachrichtigungen-aktiviert", subscribe);
+      window.removeEventListener("kg-notifications-enabled", subscribe);
       if (channel) {
         supabase.removeChannel(channel);
       }

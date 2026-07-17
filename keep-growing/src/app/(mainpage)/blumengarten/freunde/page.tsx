@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import HomeButton from "../HomeButton";
 
 type Profile = {
   id: string;
@@ -23,16 +24,17 @@ type Notification = {
   user_id: string;
   actor_id: string | null;
   type: string;
+  message: string | null;
   read: boolean;
   created_at: string;
 };
 
 function displayName(profile: Profile | undefined): string {
-  if (!profile) return "Unbekannt";
-  return profile.full_name?.trim() || profile.email || "Unbekannt";
+  if (!profile) return "Someone";
+  return profile.full_name?.trim() || profile.email || "Someone";
 }
 
-export default function FreundePage() {
+export default function FriendsPage() {
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,12 +68,12 @@ export default function FreundePage() {
     setNotifPermission(permission);
 
     if (permission === "granted") {
-      // Weckt den globalen Realtime-Listener (LikeBenachrichtigungen im
-      // Root-Layout), ohne dass die Seite neu geladen werden muss.
-      window.dispatchEvent(new Event("kg-benachrichtigungen-aktiviert"));
+      // Wakes the global realtime listener (LikeNotifications in the
+      // root layout) without requiring a page reload.
+      window.dispatchEvent(new Event("kg-notifications-enabled"));
       new Notification("Keep Growing", {
-        body: "Benachrichtigungen sind aktiviert – du erfährst es sofort, wenn jemandem deine Blumenwiese gefällt ♥",
-        icon: "/images/wildblume-3.svg",
+        body: "Notifications are on – you'll know right away when someone loves your flower meadow ♥",
+        icon: "/images/flower-real-3.png",
       });
     }
   }
@@ -101,7 +103,7 @@ export default function FreundePage() {
 
       if (friendshipError) {
         setErrorMessage(
-          "Das Freunde-System ist noch nicht eingerichtet. Bitte zuerst die Datenbank-Migration ausführen (blumengarten/freunde/supabase-migration.sql).",
+          "The friends feature is not set up yet. Please run the database migration first (blumengarten/freunde/supabase-migration.sql).",
         );
         setLoading(false);
         return;
@@ -120,7 +122,7 @@ export default function FreundePage() {
       const loadedNotifications = notificationData ?? [];
       setNotifications(loadedNotifications);
 
-      // Profile aller beteiligten Personen in einem Rutsch nachladen
+      // Load all involved profiles in one query
       const ids = new Set<string>();
       for (const friendship of loadedFriendships) {
         ids.add(friendship.requester_id);
@@ -168,20 +170,20 @@ export default function FreundePage() {
 
     if (profileError) {
       setErrorMessage(
-        "Die Suche ist fehlgeschlagen. Wurde die Datenbank-Migration schon ausgeführt?",
+        "The search failed. Has the database migration been run yet?",
       );
       setBusy(false);
       return;
     }
 
     if (!profile) {
-      setErrorMessage("Es wurde kein Konto mit dieser E-Mail gefunden.");
+      setErrorMessage("No account was found with this email address.");
       setBusy(false);
       return;
     }
 
     if (profile.id === userId) {
-      setErrorMessage("Du kannst dir nicht selbst eine Anfrage schicken.");
+      setErrorMessage("You cannot send a request to yourself.");
       setBusy(false);
       return;
     }
@@ -198,7 +200,7 @@ export default function FreundePage() {
 
     if (insertError) {
       setErrorMessage(
-        "Die Anfrage konnte nicht gesendet werden. Vielleicht seid ihr schon befreundet oder eine Anfrage läuft bereits.",
+        "The request could not be sent. Maybe you are already friends or a request is pending.",
       );
       setBusy(false);
       return;
@@ -207,7 +209,7 @@ export default function FreundePage() {
     setFriendships((prev) => [created, ...prev]);
     setProfiles((prev) => ({ ...prev, [profile.id]: profile }));
     setSearchEmail("");
-    setMessage(`Anfrage an ${displayName(profile)} wurde gesendet.`);
+    setMessage(`Your request was sent to ${displayName(profile)}.`);
     setBusy(false);
   }
 
@@ -221,7 +223,7 @@ export default function FreundePage() {
       .eq("id", friendship.id);
 
     if (error) {
-      setErrorMessage("Die Anfrage konnte nicht angenommen werden.");
+      setErrorMessage("The request could not be accepted.");
       setBusy(false);
       return;
     }
@@ -246,7 +248,7 @@ export default function FreundePage() {
       .eq("id", friendship.id);
 
     if (error) {
-      setErrorMessage("Die Anfrage konnte nicht entfernt werden.");
+      setErrorMessage("The request could not be removed.");
       setBusy(false);
       return;
     }
@@ -287,7 +289,7 @@ export default function FreundePage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Deine Freunde werden geladen...</p>
+        <p className="text-[#7a6d71]">Loading your friends...</p>
       </main>
     );
   }
@@ -299,7 +301,7 @@ export default function FreundePage() {
           <button
             type="button"
             onClick={() => router.push("/blumengarten")}
-            aria-label="Zurück zur Blumenwiese"
+            aria-label="Back to your flower meadow"
             className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
           >
             <svg
@@ -315,10 +317,12 @@ export default function FreundePage() {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
+
+          <HomeButton />
         </div>
 
         <h2 className="mb-6 font-[family-name:var(--font-cursive)] text-[42px] leading-tight lowercase text-[#d1c7b0] opacity-90">
-          deine freunde
+          your friends
         </h2>
 
         {errorMessage && (
@@ -335,37 +339,37 @@ export default function FreundePage() {
           </div>
         )}
 
-        {/* Browser-Benachrichtigungen aktivieren */}
+        {/* Enable browser notifications */}
         {notifPermission === "default" && (
           <div className="mb-5 flex items-center justify-between gap-3 rounded-[22px] bg-[#f6e7ea] px-5 py-4">
             <p className="text-[13px] leading-5 text-[#5e5357]">
-              Erfahre sofort, wenn jemandem deine Blumenwiese gefällt.
+              Find out right away when someone loves your flower meadow.
             </p>
             <button
               type="button"
               onClick={handleEnableBrowserNotifications}
               className="shrink-0 rounded-full bg-[#c08a95] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#b67f8a]"
             >
-              Aktivieren
+              Enable
             </button>
           </div>
         )}
         {notifPermission === "denied" && (
           <p className="mb-5 rounded-[22px] bg-[#f1ece9] px-5 py-3 text-[12px] leading-5 text-[#8a7d81]">
-            Browser-Benachrichtigungen sind blockiert. Du kannst sie in den
-            Website-Einstellungen deines Browsers wieder erlauben.
+            Browser notifications are blocked. You can allow them again in
+            your browser&apos;s site settings.
           </p>
         )}
 
-        {/* Benachrichtigungen */}
+        {/* Notifications */}
         {notifications.length > 0 && (
           <section className="mb-8">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-[#5e5357]">
-                Benachrichtigungen
+                Notifications
                 {unreadCount > 0 && (
                   <span className="ml-2 rounded-full bg-[#c08a95] px-2 py-0.5 text-[11px] font-medium text-white">
-                    {unreadCount} neu
+                    {unreadCount} new
                   </span>
                 )}
               </h3>
@@ -375,7 +379,7 @@ export default function FreundePage() {
                   onClick={handleMarkAllRead}
                   className="text-[12px] text-[#a29599] underline underline-offset-2 hover:text-[#c08a95]"
                 >
-                  Alle als gelesen markieren
+                  Mark all as read
                 </button>
               )}
             </div>
@@ -394,51 +398,56 @@ export default function FreundePage() {
                       ? profiles[notification.actor_id]
                       : undefined,
                   )}{" "}
-                  gefällt deine Blumenwiese{" "}
+                  loves your flower meadow{" "}
                   <span aria-hidden="true" className="text-[#c08a95]">
                     ♥
                   </span>
+                  {notification.message && (
+                    <span className="mt-1 block text-[13px] italic text-[#8a7d81]">
+                      &ldquo;{notification.message}&rdquo;
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
           </section>
         )}
 
-        {/* Freundin oder Freund hinzufügen */}
+        {/* Add a friend */}
         <section className="mb-8">
           <h3 className="mb-3 text-[15px] font-semibold text-[#5e5357]">
-            Freundin oder Freund hinzufügen
+            Add a friend
           </h3>
           <div className="flex gap-2">
             <input
               type="email"
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
-              placeholder="E-Mail-Adresse"
-              className="flex-1 rounded-full border border-[#e5dbd5] bg-white px-5 py-3 text-[14px] text-[#5e5357] placeholder-[#b2a8ab] outline-none focus:border-[#c08a95]"
+              placeholder="Email address"
+              className="w-full min-w-0 flex-1 rounded-full border border-[#e5dbd5] bg-white px-5 py-3 text-[14px] text-[#5e5357] placeholder-[#b2a8ab] outline-none focus:border-[#c08a95]"
             />
             <button
               type="button"
               onClick={handleSendRequest}
               disabled={busy || !searchEmail.trim()}
-              className="rounded-full bg-[#c08a95] px-5 py-3 text-[14px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
+              className="shrink-0 rounded-full bg-[#c08a95] px-5 py-3 text-[14px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
             >
-              Anfrage senden
+              Send request
             </button>
           </div>
         </section>
 
-        {/* Eingegangene Anfragen */}
+        {/* Incoming requests */}
         {incomingRequests.length > 0 && (
           <section className="mb-8">
             <h3 className="mb-3 text-[15px] font-semibold text-[#5e5357]">
-              Anfragen an dich
+              Requests for you
             </h3>
             <ul className="space-y-2">
               {incomingRequests.map((request) => (
                 <li
                   key={request.id}
-                  className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3"
                 >
                   <span className="text-[14px] text-[#5e5357]">
                     {displayName(profiles[request.requester_id])}
@@ -450,7 +459,7 @@ export default function FreundePage() {
                       disabled={busy}
                       className="rounded-full bg-[#c08a95] px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-[#b67f8a] disabled:opacity-50"
                     >
-                      Annehmen
+                      Accept
                     </button>
                     <button
                       type="button"
@@ -458,7 +467,7 @@ export default function FreundePage() {
                       disabled={busy}
                       className="rounded-full bg-[#efe8e3] px-4 py-1.5 text-[13px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9] disabled:opacity-50"
                     >
-                      Ablehnen
+                      Decline
                     </button>
                   </span>
                 </li>
@@ -467,11 +476,11 @@ export default function FreundePage() {
           </section>
         )}
 
-        {/* Gesendete Anfragen */}
+        {/* Sent requests */}
         {outgoingRequests.length > 0 && (
           <section className="mb-8">
             <h3 className="mb-3 text-[15px] font-semibold text-[#5e5357]">
-              Gesendete Anfragen
+              Sent requests
             </h3>
             <ul className="space-y-2">
               {outgoingRequests.map((request) => (
@@ -482,24 +491,22 @@ export default function FreundePage() {
                   <span className="text-[14px] text-[#5e5357]">
                     {displayName(profiles[request.addressee_id])}
                   </span>
-                  <span className="text-[12px] text-[#a29599]">
-                    Ausstehend
-                  </span>
+                  <span className="text-[12px] text-[#a29599]">Pending</span>
                 </li>
               ))}
             </ul>
           </section>
         )}
 
-        {/* Freundesliste */}
+        {/* Friends list */}
         <section className="mb-8">
           <h3 className="mb-3 text-[15px] font-semibold text-[#5e5357]">
-            Deine Freunde
+            Your friends
           </h3>
           {friends.length === 0 ? (
             <p className="rounded-[18px] bg-[#f1ece9] px-4 py-3 text-[14px] leading-6 text-[#8a7d81]">
-              Noch keine Freunde. Sende eine Anfrage und besucht gegenseitig
-              eure Blumenwiesen!
+              No friends yet. Send a request and visit each other&apos;s
+              flower meadows!
             </p>
           ) : (
             <ul className="space-y-2">
@@ -511,7 +518,7 @@ export default function FreundePage() {
                 return (
                   <li
                     key={friendship.id}
-                    className="flex items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3"
                   >
                     <span className="text-[14px] text-[#5e5357]">
                       {displayName(profiles[friendId])}
@@ -523,7 +530,7 @@ export default function FreundePage() {
                       }
                       className="rounded-full bg-[#c08a95] px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-[#b67f8a]"
                     >
-                      Wiese besuchen
+                      Visit meadow
                     </button>
                   </li>
                 );
@@ -538,7 +545,7 @@ export default function FreundePage() {
             onClick={() => router.push("/impressum")}
             className="text-[11px] text-[#4f6175] underline underline-offset-2"
           >
-            Über uns
+            About us
           </button>
         </div>
       </div>

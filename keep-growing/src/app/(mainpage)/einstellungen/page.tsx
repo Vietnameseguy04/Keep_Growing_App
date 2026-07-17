@@ -77,30 +77,31 @@ export default async function EinstellungenPage({
           </div>
         </section>
 
-        {/* Blumenwiese Sektion */}
+        {/* Flower meadow Sektion */}
         <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
-          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Blumenwiese</h2>
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Flower meadow</h2>
           {reset === 'fehler' && (
             <p className="mb-4 text-sm text-[#9b5d68]">
-              Das Zurücksetzen hat nicht geklappt. Wurde die Datenbank-Migration
-              (blumengarten/freunde/supabase-migration.sql) schon ausgeführt?
+              The reset did not work. Has the database migration
+              (blumengarten/freunde/supabase-migration.sql) been run yet?
             </p>
           )}
           <details className="group">
             <summary className="cursor-pointer list-none flex items-center justify-between text-gray-800 font-medium">
-              Wiese zurücksetzen
+              Reset your meadow
               <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
             </summary>
             <p className="mt-3 text-sm text-gray-400">
-              Deine bisherigen Blumen werden archiviert und deine Wiese beginnt
-              leer. Zum Monatsanfang passiert das automatisch.
+              Your current flowers will be archived and your meadow starts
+              fresh. This also happens automatically at the start of each
+              month.
             </p>
             <form action={handleGardenReset} className="mt-4">
               <button
                 type="submit"
                 className="w-full bg-[#c08a95] text-white py-3 rounded-[20px] font-bold shadow hover:bg-[#b67f8a] active:scale-[0.98] transition-all"
               >
-                Ja, Wiese jetzt zurücksetzen
+                Yes, reset my meadow now
               </button>
             </form>
           </details>

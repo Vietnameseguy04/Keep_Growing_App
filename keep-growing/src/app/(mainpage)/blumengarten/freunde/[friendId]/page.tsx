@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { flowerImageById, flowerTitleById } from "../../flowers";
+import HomeButton from "../../HomeButton";
 
 type SavedFlower = {
   id: string;
@@ -20,7 +22,7 @@ function startOfCurrentMonth(): Date {
   return new Date(now.getFullYear(), now.getMonth(), 1);
 }
 
-export default function FreundesGartenPage() {
+export default function FriendGardenPage() {
   const router = useRouter();
   const params = useParams<{ friendId: string }>();
   const supabase = createClient();
@@ -28,10 +30,16 @@ export default function FreundesGartenPage() {
   const friendId = params.friendId;
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [friendName, setFriendName] = useState("deine Freundin");
+  const [friendName, setFriendName] = useState("your friend");
   const [flowers, setFlowers] = useState<SavedFlower[]>([]);
-  const [liked, setLiked] = useState(false);
+
+  // Like flow: heart click opens a message box, sending stores the like
+  // (plus optional message) and resets the heart so it can be sent again.
+  const [likeBoxOpen, setLikeBoxOpen] = useState(false);
+  const [likeMessage, setLikeMessage] = useState("");
+  const [likeSent, setLikeSent] = useState(false);
   const [likeBusy, setLikeBusy] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -52,8 +60,8 @@ export default function FreundesGartenPage() {
 
       setUserId(user.id);
 
-      // Nur Wiesen von Freunden sind sichtbar (durch die RLS-Policies
-      // in supabase-migration.sql abgesichert).
+      // Only meadows of friends are visible (enforced by the RLS
+      // policies in supabase-migration.sql).
       const { data: friendship, error: friendshipError } = await supabase
         .from("friendships")
         .select("id")
@@ -65,7 +73,7 @@ export default function FreundesGartenPage() {
 
       if (friendshipError || !friendship) {
         setErrorMessage(
-          "Diese Blumenwiese kannst du nur besuchen, wenn ihr befreundet seid.",
+          "You can only visit this flower meadow once you are friends.",
         );
         setLoading(false);
         return;
@@ -79,13 +87,13 @@ export default function FreundesGartenPage() {
 
       if (profile) {
         setFriendName(
-          (profile.full_name?.trim() || profile.email || "deine Freundin")
+          (profile.full_name?.trim() || profile.email || "your friend")
             .toLowerCase()
             .split(" ")[0],
         );
       }
 
-      // Auch beim Besuch gilt die Monatsregel der Besitzerin
+      // The owner's monthly rule also applies when visiting
       let visibleFrom = startOfCurrentMonth();
 
       const { data: settings } = await supabase
@@ -110,20 +118,12 @@ export default function FreundesGartenPage() {
 
       if (flowerError) {
         setErrorMessage(
-          `Die Blumenwiese konnte nicht geladen werden: ${flowerError.message}`,
+          `The flower meadow could not be loaded: ${flowerError.message}`,
         );
       } else {
         setFlowers(flowerData ?? []);
       }
 
-      const { data: existingLike } = await supabase
-        .from("garden_likes")
-        .select("id")
-        .eq("garden_owner_id", friendId)
-        .eq("liker_id", user.id)
-        .maybeSingle();
-
-      setLiked(Boolean(existingLike));
       setLoading(false);
     }
 
@@ -132,44 +132,38 @@ export default function FreundesGartenPage() {
     }
   }, [friendId, router, supabase]);
 
-  async function handleToggleLike() {
+  async function handleSendLike() {
     if (!userId || likeBusy) return;
 
     setLikeBusy(true);
     setErrorMessage(null);
 
-    if (liked) {
-      const { error } = await supabase
-        .from("garden_likes")
-        .delete()
-        .eq("garden_owner_id", friendId)
-        .eq("liker_id", userId);
+    const trimmed = likeMessage.trim();
 
-      if (error) {
-        setErrorMessage("Das Like konnte nicht entfernt werden.");
-      } else {
-        setLiked(false);
-      }
-    } else {
-      const { error } = await supabase.from("garden_likes").insert({
-        garden_owner_id: friendId,
-        liker_id: userId,
-      });
+    const { error } = await supabase.from("garden_likes").insert({
+      garden_owner_id: friendId,
+      liker_id: userId,
+      message: trimmed || null,
+    });
 
-      if (error) {
-        setErrorMessage("Das Like konnte nicht gespeichert werden.");
-      } else {
-        setLiked(true);
-      }
+    if (error) {
+      setErrorMessage("Your like could not be sent. Please try again.");
+      setLikeBusy(false);
+      return;
     }
 
+    // Reset the heart so another like can be sent later.
+    setLikeBoxOpen(false);
+    setLikeMessage("");
+    setLikeSent(true);
     setLikeBusy(false);
+    window.setTimeout(() => setLikeSent(false), 3500);
   }
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Die Blumenwiese wird geladen...</p>
+        <p className="text-[#7a6d71]">Loading the flower meadow...</p>
       </main>
     );
   }
@@ -181,7 +175,7 @@ export default function FreundesGartenPage() {
           <button
             type="button"
             onClick={() => router.push("/blumengarten/freunde")}
-            aria-label="Zurück zur Freundesliste"
+            aria-label="Back to your friends"
             className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
           >
             <svg
@@ -197,30 +191,32 @@ export default function FreundesGartenPage() {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
+
+          <HomeButton />
         </div>
 
         <h2 className="mb-4 font-[family-name:var(--font-cursive)] text-[42px] leading-tight lowercase text-[#d1c7b0] opacity-90">
-          {friendName}s garten
+          {friendName}&apos;s garden
         </h2>
 
         {!errorMessage && (
           <div className="mb-6 flex items-center justify-between gap-3">
             <p className="rounded-[18px] bg-[#f1ece9] px-5 py-3 text-[15px] font-semibold text-[#5e5357]">
-              wow, wie schön!
+              wow, how beautiful!
             </p>
             <button
               type="button"
-              onClick={handleToggleLike}
+              onClick={() => setLikeBoxOpen((open) => !open)}
               disabled={likeBusy}
-              aria-label={liked ? "Like entfernen" : "Blumenwiese liken"}
-              aria-pressed={liked}
+              aria-label="Like this flower meadow"
+              aria-expanded={likeBoxOpen}
               className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f6e7ea] transition hover:bg-[#f2dce1] disabled:opacity-50"
             >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
-                fill={liked ? "#c05a6e" : "none"}
+                fill={likeBoxOpen ? "#c05a6e" : "none"}
                 stroke="#c05a6e"
                 strokeWidth="1.8"
                 strokeLinecap="round"
@@ -232,6 +228,71 @@ export default function FreundesGartenPage() {
           </div>
         )}
 
+        <AnimatePresence initial={false}>
+          {likeBoxOpen && !errorMessage && (
+            <motion.div
+              key="like-box"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="mb-6 rounded-[22px] bg-white px-5 py-4">
+                <label
+                  htmlFor="like-message"
+                  className="mb-2 block text-[13px] font-medium text-[#5e5357]"
+                >
+                  Add a little message if you like:
+                </label>
+                <textarea
+                  id="like-message"
+                  value={likeMessage}
+                  onChange={(e) => setLikeMessage(e.target.value)}
+                  maxLength={200}
+                  rows={2}
+                  placeholder="wow, your meadow looks lovely..."
+                  className="w-full resize-none rounded-[16px] bg-[#f6f3f1] px-4 py-3 text-[14px] text-[#5e5357] placeholder-[#b2a8ab] outline-none focus:ring-1 focus:ring-[#c08a95]"
+                />
+                <div className="mt-3 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLikeBoxOpen(false);
+                      setLikeMessage("");
+                    }}
+                    className="rounded-full bg-[#efe8e3] px-4 py-2 text-[13px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendLike}
+                    disabled={likeBusy}
+                    className="rounded-full bg-[#c08a95] px-5 py-2 text-[13px] font-medium text-white transition hover:bg-[#b67f8a] disabled:opacity-50"
+                  >
+                    {likeBusy ? "Sending..." : "Send like ♥"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {likeSent && (
+            <motion.p
+              key="like-sent"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-6 rounded-[22px] bg-[#eaf1e2] px-5 py-3 text-center text-[14px] text-[#5e7050]"
+            >
+              Your like is on its way ♥
+            </motion.p>
+          )}
+        </AnimatePresence>
+
         {errorMessage && (
           <div className="mb-5 rounded-[22px] bg-[#f8e8ea] px-5 py-4 text-center">
             <p className="text-[14px] leading-6 text-[#9b5d68]">
@@ -242,7 +303,7 @@ export default function FreundesGartenPage() {
 
         {!errorMessage && (
           <div className="relative h-[360px] w-full overflow-hidden rounded-[28px]">
-            {/* Wiesen-Hintergrund wie im eigenen Garten */}
+            {/* Same meadow background as your own garden */}
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox="0 0 400 360"
@@ -251,38 +312,38 @@ export default function FreundesGartenPage() {
             >
               <defs>
                 <linearGradient id="skyFriend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f7f8f0" />
-                  <stop offset="60%" stopColor="#eef3e2" />
-                  <stop offset="100%" stopColor="#e3ecd2" />
+                  <stop offset="0%" stopColor="#f8f8f1" />
+                  <stop offset="55%" stopColor="#f0f4e4" />
+                  <stop offset="100%" stopColor="#e5edd5" />
                 </linearGradient>
                 <linearGradient id="meadowFriend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#d3e2ba" />
-                  <stop offset="100%" stopColor="#b7cf9a" />
+                  <stop offset="0%" stopColor="#d6e3bf" />
+                  <stop offset="100%" stopColor="#bad19e" />
                 </linearGradient>
               </defs>
               <rect width="400" height="360" fill="url(#skyFriend)" />
               <path
-                d="M0 205 C 90 185, 170 200, 260 192 C 320 187, 370 194, 400 190 L 400 360 L 0 360 Z"
-                fill="#dde9c6"
-                opacity="0.8"
+                d="M0 212 C 55 198, 118 207, 176 199 C 235 191, 287 201, 336 195 C 362 192, 384 196, 400 193 L 400 360 L 0 360 Z"
+                fill="#dfeaca"
+                opacity="0.75"
               />
               <path
-                d="M0 235 C 80 218, 180 232, 270 224 C 330 219, 375 228, 400 222 L 400 360 L 0 360 Z"
+                d="M0 241 C 62 226, 121 237, 183 229 C 246 221, 300 233, 348 226 C 370 223, 388 228, 400 225 L 400 360 L 0 360 Z"
                 fill="url(#meadowFriend)"
               />
               <g
                 stroke="#9db884"
-                strokeWidth="2"
                 strokeLinecap="round"
-                opacity="0.55"
+                fill="none"
+                opacity="0.5"
+                strokeWidth="1.8"
               >
-                <path d="M30 340 C 28 326, 30 316, 34 306" fill="none" />
-                <path d="M70 344 C 72 330, 70 320, 66 312" fill="none" />
-                <path d="M130 338 C 128 326, 131 316, 135 308" fill="none" />
-                <path d="M205 344 C 207 330, 204 320, 200 312" fill="none" />
-                <path d="M275 340 C 273 328, 276 318, 280 310" fill="none" />
-                <path d="M345 344 C 347 330, 344 320, 340 310" fill="none" />
-                <path d="M375 338 C 373 326, 376 318, 380 310" fill="none" />
+                <path d="M26 338 C 23 325, 26 315, 31 307" />
+                <path d="M96 346 C 98 333, 95 323, 90 316" />
+                <path d="M167 337 C 164 327, 166 318, 171 310" />
+                <path d="M247 344 C 249 331, 246 322, 241 314" />
+                <path d="M318 340 C 320 329, 318 320, 313 312" />
+                <path d="M373 345 C 371 333, 374 323, 379 314" />
               </g>
             </svg>
 
@@ -291,7 +352,7 @@ export default function FreundesGartenPage() {
                 key={flower.id}
                 src={
                   flowerImageById[flower.flower_type] ??
-                  "/images/wildblume-1.svg"
+                  "/images/flower-real-1.png"
                 }
                 alt={flowerTitleById[flower.flower_type] ?? flower.flower_type}
                 className="absolute w-[58px] object-contain"
@@ -307,7 +368,7 @@ export default function FreundesGartenPage() {
             {flowers.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center px-8 text-center">
                 <p className="text-sm text-[#7d8a70]">
-                  Hier wachsen diesen Monat noch keine Blumen.
+                  No flowers are growing here this month yet.
                 </p>
               </div>
             )}
@@ -316,7 +377,7 @@ export default function FreundesGartenPage() {
 
         <div className="mt-8 flex items-center justify-center gap-3">
           <img
-            src="/images/wildblume-3.svg"
+            src="/images/flower-real-3.png"
             alt=""
             className="h-10 w-10 rounded-full bg-[#f3e9e4] object-contain p-1"
           />
@@ -325,7 +386,7 @@ export default function FreundesGartenPage() {
             onClick={() => router.push("/blumengarten")}
             className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
           >
-            Zurück zu deiner Blumenwiese
+            go back to your flower meadow
           </button>
         </div>
 
@@ -335,7 +396,7 @@ export default function FreundesGartenPage() {
             onClick={() => router.push("/impressum")}
             className="text-[11px] text-[#4f6175] underline underline-offset-2"
           >
-            Über uns
+            About us
           </button>
         </div>
       </div>
