@@ -22,7 +22,7 @@ export default function FlowerSelectionPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          aria-label="Zurück"
+          aria-label="Back"
           className="mb-6 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[#f3ece8]"
         >
           <svg
@@ -41,7 +41,7 @@ export default function FlowerSelectionPage() {
 
         <div className="mb-10 rounded-3xl bg-[#f2ebe8] px-6 py-5 text-center shadow-sm">
           <h1 className="text-lg font-bold leading-7 text-[#7a4a58]">
-            Wähle dein autogenes Training für heute und lass deinen Geist wachsen
+            Choose your autogenic training for today and let your mind grow
           </h1>
         </div>
 
@@ -71,7 +71,7 @@ export default function FlowerSelectionPage() {
             onClick={handleSkip}
             className="text-[13px] text-[#4f6175] underline underline-offset-2"
           >
-            Direkt zu deiner Blumenwiese
+            go directly to your flower meadow
           </button>
         </div>
 
@@ -81,7 +81,7 @@ export default function FlowerSelectionPage() {
             onClick={() => router.push("/impressum")}
             className="text-[11px] text-[#4f6175] underline underline-offset-2"
           >
-            Über uns
+            About us
           </button>
         </div>
       </div>

@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { flowerImageById, flowerTitleById } from "./flowers";
+import HomeButton from "./HomeButton";
 
 type SavedFlower = {
   id: string;
@@ -23,11 +25,88 @@ type PendingFlower = {
 
 type GardenMode = "view" | "place-new" | "edit-select" | "edit-move";
 
-// Blumen werden pro Monat gesammelt: Sichtbar sind nur Blumen, die nach dem
-// Monatsanfang (bzw. nach einem manuellen Zurücksetzen) gepflanzt wurden.
+// Flowers are collected per month: only flowers planted after the start
+// of the current month (or after a manual reset in the settings) show up.
 function startOfCurrentMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+// Gentle watercolor-like meadow: soft sky, organic hills, loose grass
+// tufts and a few distant blossoms so it doesn't look too uniform.
+function MeadowBackground() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      viewBox="0 0 400 360"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="meadowSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f8f8f1" />
+          <stop offset="55%" stopColor="#f0f4e4" />
+          <stop offset="100%" stopColor="#e5edd5" />
+        </linearGradient>
+        <linearGradient id="meadowGrass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#d6e3bf" />
+          <stop offset="100%" stopColor="#bad19e" />
+        </linearGradient>
+        <filter id="meadowTexture" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="2"
+            seed="7"
+            result="noise"
+          />
+          <feColorMatrix
+            in="noise"
+            type="matrix"
+            values="0 0 0 0 0.55  0 0 0 0 0.65  0 0 0 0 0.45  0 0 0 0.05 0"
+          />
+        </filter>
+      </defs>
+      <rect width="400" height="360" fill="url(#meadowSky)" />
+      <path
+        d="M0 212 C 55 198, 118 207, 176 199 C 235 191, 287 201, 336 195 C 362 192, 384 196, 400 193 L 400 360 L 0 360 Z"
+        fill="#dfeaca"
+        opacity="0.75"
+      />
+      <path
+        d="M0 241 C 62 226, 121 237, 183 229 C 246 221, 300 233, 348 226 C 370 223, 388 228, 400 225 L 400 360 L 0 360 Z"
+        fill="url(#meadowGrass)"
+      />
+      <rect width="400" height="360" filter="url(#meadowTexture)" opacity="0.6" />
+      <g stroke="#9db884" strokeLinecap="round" fill="none">
+        <g opacity="0.5" strokeWidth="1.8">
+          <path d="M26 338 C 23 325, 26 315, 31 307" />
+          <path d="M33 341 C 33 330, 36 322, 41 315" />
+          <path d="M96 346 C 98 333, 95 323, 90 316" />
+          <path d="M167 337 C 164 327, 166 318, 171 310" />
+          <path d="M174 340 C 176 330, 174 320, 169 313" />
+          <path d="M247 344 C 249 331, 246 322, 241 314" />
+          <path d="M311 336 C 308 326, 310 317, 315 309" />
+          <path d="M318 340 C 320 329, 318 320, 313 312" />
+          <path d="M373 345 C 371 333, 374 323, 379 314" />
+        </g>
+        <g opacity="0.35" strokeWidth="1.4">
+          <path d="M62 350 C 60 341, 62 334, 66 328" />
+          <path d="M135 352 C 137 342, 135 335, 131 329" />
+          <path d="M209 349 C 207 340, 209 333, 213 327" />
+          <path d="M282 352 C 284 342, 282 335, 278 328" />
+          <path d="M349 350 C 347 341, 349 334, 353 328" />
+        </g>
+      </g>
+      <g opacity="0.45">
+        <circle cx="58" cy="288" r="2.4" fill="#fdfaf2" />
+        <circle cx="142" cy="304" r="2" fill="#f3e7b9" />
+        <circle cx="228" cy="292" r="2.4" fill="#fdfaf2" />
+        <circle cx="296" cy="309" r="1.8" fill="#eed7dd" />
+        <circle cx="358" cy="296" r="2.2" fill="#fdfaf2" />
+      </g>
+    </svg>
+  );
 }
 
 export default function BlumengartenPage() {
@@ -36,7 +115,7 @@ export default function BlumengartenPage() {
   const gardenRef = useRef<HTMLDivElement>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [userName, setUserName] = useState("freundin");
+  const [userName, setUserName] = useState("friend");
   const [flowers, setFlowers] = useState<SavedFlower[]>([]);
   const [selectedFlowerType, setSelectedFlowerType] = useState<string | null>(
     null,
@@ -56,7 +135,6 @@ export default function BlumengartenPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [confirmingReset, setConfirmingReset] = useState(false);
 
   useEffect(() => {
     async function loadGarden() {
@@ -84,9 +162,9 @@ export default function BlumengartenPage() {
       }
 
       setUserId(user.id);
-      setUserName((user.user_metadata.full_name || "freundin").toLowerCase());
+      setUserName((user.user_metadata.full_name || "friend").toLowerCase());
 
-      // Sichtbarkeitsgrenze: Monatsanfang oder letztes manuelles Zurücksetzen
+      // Visibility boundary: start of month or the last manual reset
       let visibleFrom = startOfCurrentMonth();
 
       const { data: settings } = await supabase
@@ -111,7 +189,7 @@ export default function BlumengartenPage() {
 
       if (error) {
         setErrorMessage(
-          `Deine Blumenwiese konnte nicht geladen werden: ${error.message}`,
+          `Your flower meadow could not be loaded: ${error.message}`,
         );
       } else {
         setFlowers(data ?? []);
@@ -191,9 +269,7 @@ export default function BlumengartenPage() {
       .single();
 
     if (error) {
-      setErrorMessage(
-        `Die Blume konnte nicht gespeichert werden: ${error.message}`,
-      );
+      setErrorMessage(`The flower could not be saved: ${error.message}`);
       setSaving(false);
       return;
     }
@@ -222,7 +298,7 @@ export default function BlumengartenPage() {
 
     if (error) {
       setErrorMessage(
-        `Die Position konnte nicht gespeichert werden: ${error.message}`,
+        `The flower position could not be updated: ${error.message}`,
       );
       setSaving(false);
       return;
@@ -262,54 +338,23 @@ export default function BlumengartenPage() {
     setMode("view");
   }
 
-  async function handleConfirmReset() {
-    if (!userId) return;
-
-    setSaving(true);
-    setErrorMessage(null);
-
-    // Die Blumen bleiben als Archiv in der Datenbank erhalten und werden
-    // nur ausgeblendet: Ab jetzt zählt last_reset_at als Sichtbarkeitsgrenze.
-    const { error } = await supabase.from("garden_settings").upsert({
-      user_id: userId,
-      last_reset_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      setErrorMessage(
-        "Zum Zurücksetzen muss zuerst die Datenbank-Migration ausgeführt werden (siehe blumengarten/freunde/supabase-migration.sql).",
-      );
-      setSaving(false);
-      setConfirmingReset(false);
-      return;
-    }
-
-    setFlowers([]);
-    setConfirmingReset(false);
-    setSaving(false);
-  }
-
-  function handleLeaveGarden() {
-    router.push("/dashboard");
-  }
-
   const infoText =
     mode === "place-new"
       ? pendingNewFlower
-        ? "Fühlt sich dieser Platz richtig an für deine Blume?"
-        : "Wähle einen Platz, an dem deine neue Blume wachsen kann."
+        ? "Does this place feel right for your flower?"
+        : "Choose a place where your new flower can grow."
       : mode === "edit-select"
-        ? "Wähle eine Blume aus, die du verschieben möchtest."
+        ? "Select a flower you would like to move."
         : mode === "edit-move"
           ? pendingEditPosition
-            ? "Fühlt sich der neue Platz richtig an für deine Blume?"
-            : "Wähle einen neuen Platz für deine Blume."
-          : "Schön, dass du dranbleibst! Sieh zu, wie deine Blumenwiese & dein Geist langsam wachsen.";
+            ? "Does this new place feel right for your flower?"
+            : "Choose a new place for your flower."
+          : "Lovely to see you again! Watch your flower meadow & your mind slowly grow.";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Deine Blumenwiese wird geladen...</p>
+        <p className="text-[#7a6d71]">Loading your flower meadow...</p>
       </main>
     );
   }
@@ -320,7 +365,7 @@ export default function BlumengartenPage() {
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 className="font-[family-name:var(--font-cursive)] text-[42px] leading-tight lowercase text-[#d1c7b0] opacity-90">
-              hallo {userName}
+              hello {userName}
             </h2>
           </div>
 
@@ -331,7 +376,7 @@ export default function BlumengartenPage() {
                 onClick={handleStartEditMode}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Bearbeiten
+                Edit
               </button>
             )}
 
@@ -341,7 +386,7 @@ export default function BlumengartenPage() {
                 onClick={handleCancelEditMode}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Abbrechen
+                Cancel
               </button>
             )}
 
@@ -351,84 +396,41 @@ export default function BlumengartenPage() {
                 onClick={handleCancelPlaceNew}
                 className="rounded-[18px] bg-[#efe8e3] px-4 py-2.5 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#e8dfd9]"
               >
-                Abbrechen
+                Cancel
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={handleLeaveGarden}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl transition hover:bg-[#f3ece8]"
-              aria-label="Blumenwiese verlassen"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#c08a95"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 10.5L12 3l9 7.5" />
-                <path d="M5 10v10h14V10" />
-              </svg>
-            </button>
+            <HomeButton />
           </div>
         </div>
 
-        <p className="mb-8 px-4 text-center text-[14px] leading-6 text-[#5e5357]">
-          {infoText}
-        </p>
+        {/* Fixed height so the meadow below never jumps when the text changes */}
+        <div className="mb-6 flex min-h-[56px] items-center justify-center px-4">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.p
+              key={infoText}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="text-center text-[14px] leading-6 text-[#5e5357]"
+            >
+              {infoText}
+            </motion.p>
+          </AnimatePresence>
+        </div>
 
         <div
           ref={gardenRef}
           onClick={handleGardenClick}
           className="relative h-[360px] w-full overflow-hidden rounded-[28px]"
         >
-          {/* Wiesen-Hintergrund: heller Himmel, sanfte Hügel, Grashalme */}
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            viewBox="0 0 400 360"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f7f8f0" />
-                <stop offset="60%" stopColor="#eef3e2" />
-                <stop offset="100%" stopColor="#e3ecd2" />
-              </linearGradient>
-              <linearGradient id="meadow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#d3e2ba" />
-                <stop offset="100%" stopColor="#b7cf9a" />
-              </linearGradient>
-            </defs>
-            <rect width="400" height="360" fill="url(#sky)" />
-            <path
-              d="M0 205 C 90 185, 170 200, 260 192 C 320 187, 370 194, 400 190 L 400 360 L 0 360 Z"
-              fill="#dde9c6"
-              opacity="0.8"
-            />
-            <path
-              d="M0 235 C 80 218, 180 232, 270 224 C 330 219, 375 228, 400 222 L 400 360 L 0 360 Z"
-              fill="url(#meadow)"
-            />
-            <g stroke="#9db884" strokeWidth="2" strokeLinecap="round" opacity="0.55">
-              <path d="M30 340 C 28 326, 30 316, 34 306" fill="none" />
-              <path d="M70 344 C 72 330, 70 320, 66 312" fill="none" />
-              <path d="M130 338 C 128 326, 131 316, 135 308" fill="none" />
-              <path d="M205 344 C 207 330, 204 320, 200 312" fill="none" />
-              <path d="M275 340 C 273 328, 276 318, 280 310" fill="none" />
-              <path d="M345 344 C 347 330, 344 320, 340 310" fill="none" />
-              <path d="M375 338 C 373 326, 376 318, 380 310" fill="none" />
-            </g>
-          </svg>
+          <MeadowBackground />
 
           {flowers.map((flower) => {
             const imageSrc =
-              flowerImageById[flower.flower_type] ?? "/images/wildblume-1.svg";
+              flowerImageById[flower.flower_type] ??
+              "/images/flower-pressed-1.png";
             const flowerTitle =
               flowerTitleById[flower.flower_type] ?? flower.flower_type;
             const isEditingSelected = editingFlowerId === flower.id;
@@ -473,9 +475,9 @@ export default function BlumengartenPage() {
             <img
               src={
                 flowerImageById[pendingNewFlower.flower_type] ??
-                "/images/wildblume-1.svg"
+                "/images/flower-pressed-1.png"
               }
-              alt="Vorschau der neuen Blume"
+              alt="Preview of your new flower"
               className="pointer-events-none absolute w-[58px] object-contain opacity-80"
               style={{
                 left: `${pendingNewFlower.x * 100}%`,
@@ -489,8 +491,8 @@ export default function BlumengartenPage() {
           {flowers.length === 0 && mode === "view" && (
             <div className="absolute inset-0 flex items-center justify-center px-8 text-center">
               <p className="text-sm text-[#7d8a70]">
-                Noch keine Blumen gepflanzt. Wähle zuerst ein Training aus und
-                lass deine erste Blume wachsen.
+                No flowers yet. Complete a training and let your first flower
+                grow.
               </p>
             </div>
           )}
@@ -504,102 +506,98 @@ export default function BlumengartenPage() {
           </div>
         )}
 
-        {mode === "place-new" && pendingNewFlower && (
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={handleConfirmNewFlower}
-              disabled={saving}
-              className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
-            >
-              {saving ? "Wird gespeichert..." : "Position bestätigen"}
-            </button>
-          </div>
-        )}
-
-        {mode === "edit-move" && editingFlowerId && pendingEditPosition && (
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={handleConfirmEdit}
-              disabled={saving}
-              className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
-            >
-              {saving ? "Wird gespeichert..." : "Neue Position bestätigen"}
-            </button>
-          </div>
-        )}
-
-        {mode === "view" && (
-          <>
-            <p className="mt-6 px-4 text-center text-[15px] leading-6 text-[#5e5357]">
-              Mach einen Unterschied! Unterstütze die Artenvielfalt
-              <br />
-              mit einer Wildblumenwiesen-Patenschaft
-              <br />
-              für 2,99 €. Mehr Infos.
-            </p>
-
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <img
-                src="/images/wildblume-3.svg"
-                alt=""
-                className="h-10 w-10 rounded-full bg-[#f3e9e4] object-contain p-1"
-              />
-              <button
-                type="button"
-                onClick={() => router.push("/blumengarten/freunde")}
-                className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
+        {/* Fixed-height footer area: content cross-fades between modes so
+            the layout stays calm instead of jumping. */}
+        <div className="relative mt-5 min-h-[168px]">
+          <AnimatePresence mode="wait" initial={false}>
+            {mode === "place-new" && pendingNewFlower && (
+              <motion.div
+                key="confirm-new"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
               >
-                Entdecke die Blumenwiesen deiner Freunde
-              </button>
-            </div>
-
-            <div className="mt-6 text-center">
-              {confirmingReset ? (
-                <div className="rounded-[22px] bg-[#efe8e3] px-5 py-4">
-                  <p className="mb-3 text-[14px] leading-6 text-[#5e5357]">
-                    Möchtest du deine Wiese wirklich zurücksetzen? Deine
-                    bisherigen Blumen werden archiviert.
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    <button
-                      type="button"
-                      onClick={handleConfirmReset}
-                      disabled={saving}
-                      className="rounded-full bg-[#c08a95] px-5 py-2 text-[14px] font-medium text-white transition hover:bg-[#b67f8a] disabled:opacity-50"
-                    >
-                      Ja, zurücksetzen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingReset(false)}
-                      className="rounded-full bg-white px-5 py-2 text-[14px] font-medium text-[#6b5c61] transition hover:bg-[#f3ece8]"
-                    >
-                      Abbrechen
-                    </button>
-                  </div>
-                </div>
-              ) : (
                 <button
                   type="button"
-                  onClick={() => setConfirmingReset(true)}
-                  className="text-[12px] text-[#a29599] underline underline-offset-2 transition hover:text-[#c08a95]"
+                  onClick={handleConfirmNewFlower}
+                  disabled={saving}
+                  className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
                 >
-                  Wiese zurücksetzen
+                  {saving ? "Saving..." : "Confirm position"}
                 </button>
-              )}
-            </div>
-          </>
-        )}
+              </motion.div>
+            )}
 
-        <div className="mt-6 text-center">
+            {mode === "edit-move" && editingFlowerId && pendingEditPosition && (
+              <motion.div
+                key="confirm-edit"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <button
+                  type="button"
+                  onClick={handleConfirmEdit}
+                  disabled={saving}
+                  className="w-full rounded-[18px] bg-[#c08a95] px-4 py-3 text-[15px] font-medium text-white shadow-sm transition hover:bg-[#b67f8a] disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Confirm new position"}
+                </button>
+              </motion.div>
+            )}
+
+            {mode === "view" && (
+              <motion.div
+                key="view-footer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <p className="px-4 text-center text-[15px] leading-6 text-[#5e5357]">
+                  Make a difference! Support biodiversity
+                  <br />
+                  with a wildflower meadow sponsorship
+                  <br />
+                  for 2,99 €.{" "}
+                  <a
+                    href="https://bluehende-landschaft.de/bluehpatenschaften-mit-echter-wirkung/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 transition hover:text-[#c08a95]"
+                  >
+                    More info.
+                  </a>
+                </p>
+
+                <div className="mt-6 flex items-center justify-center gap-3">
+                  <img
+                    src="/images/flower-real-3.png"
+                    alt=""
+                    className="h-10 w-10 rounded-full bg-[#f3e9e4] object-contain p-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => router.push("/blumengarten/freunde")}
+                    className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
+                  >
+                    discover your friends&apos; flower meadows
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="mt-4 text-center">
           <button
             type="button"
             onClick={() => router.push("/impressum")}
             className="text-[11px] text-[#4f6175] underline underline-offset-2"
           >
-            Über uns
+            About us
           </button>
         </div>
       </div>
