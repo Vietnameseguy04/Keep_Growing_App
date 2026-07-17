@@ -276,10 +276,54 @@ create trigger on_garden_like
   after insert on public.garden_likes
   for each row execute function public.notify_garden_like();
 
+-- Trigger: Neue Freundschaftsanfrage -> Benachrichtigung an die
+-- angefragte Person ("X sent you a friend request")
+create or replace function public.notify_friend_request()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = 'pending' then
+    insert into public.notifications (user_id, actor_id, type)
+    values (new.addressee_id, new.requester_id, 'friend_request');
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_friend_request on public.friendships;
+create trigger on_friend_request
+  after insert on public.friendships
+  for each row execute function public.notify_friend_request();
+
+-- Trigger: Anfrage angenommen -> Benachrichtigung an die anfragende
+-- Person ("X accepted your friend request")
+create or replace function public.notify_friend_accepted()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = 'accepted' and old.status = 'pending' then
+    insert into public.notifications (user_id, actor_id, type)
+    values (new.requester_id, new.addressee_id, 'friend_accepted');
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_friend_accepted on public.friendships;
+create trigger on_friend_accepted
+  after update on public.friendships
+  for each row execute function public.notify_friend_accepted();
+
 
 -- Realtime für notifications aktivieren, damit der Browser sofort
 -- benachrichtigt werden kann, wenn ein neues Like eintrifft
--- (genutzt von blumengarten/freunde/LikeBenachrichtigungen.tsx):
+-- (genutzt von blumengarten/freunde/LikeNotifications.tsx):
 do $$
 begin
   if not exists (

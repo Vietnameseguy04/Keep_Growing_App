@@ -10,15 +10,11 @@ export type FlowerOption = {
   image: string;
 };
 
-// Three interchangeable art styles live in public/images:
-//   "pressed"    – realistic pressed flowers WITH stems, extracted from
-//                  the garden mockups in the client's design PDF
-//                  (flower-pressed-1..4.png)
-//   "blossom"    – the client's watercolor blossom heads from the
-//                  selection-screen mockup (flower-real-1..4.png)
-//   "watercolor" – hand-built SVG wildflowers with stems
-//                  (wildblume-1..4.svg)
-// Switch styles by changing FLOWER_STYLE – nothing else needs to change.
+// Three flower sets live side by side in public/images so we can switch
+// the look without touching any component: "pressed" (real pressed
+// flowers with stems, taken from the garden mockups), "blossom" (the
+// watercolor blossom heads from the selection mockup) and "watercolor"
+// (the SVGs we drew ourselves). Just flip FLOWER_STYLE below.
 export type FlowerStyle = "pressed" | "blossom" | "watercolor";
 
 export const FLOWER_STYLE: FlowerStyle = "pressed";

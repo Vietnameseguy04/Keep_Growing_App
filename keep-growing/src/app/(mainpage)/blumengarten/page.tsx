@@ -338,6 +338,11 @@ export default function BlumengartenPage() {
     setMode("view");
   }
 
+  // A flower is waiting from training as long as it hasn't been placed
+  // yet (kept simple: localStorage only ever holds one pending flower,
+  // so this stays a single reminder rather than a list - no DB needed).
+  const showFlowerReadyBanner = mode === "place-new" && !pendingNewFlower;
+
   const infoText =
     mode === "place-new"
       ? pendingNewFlower
@@ -407,16 +412,30 @@ export default function BlumengartenPage() {
         {/* Fixed height so the meadow below never jumps when the text changes */}
         <div className="mb-6 flex min-h-[56px] items-center justify-center px-4">
           <AnimatePresence mode="wait" initial={false}>
-            <motion.p
-              key={infoText}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="text-center text-[14px] leading-6 text-[#5e5357]"
-            >
-              {infoText}
-            </motion.p>
+            {showFlowerReadyBanner ? (
+              <motion.div
+                key="flower-ready-banner"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-center justify-center gap-2 rounded-[18px] bg-[#f6e7ea] px-5 py-3 text-center text-[14px] leading-6 text-[#5e5357]"
+              >
+                <span aria-hidden="true">🌸</span>
+                <span>Your new flower is ready to plant!</span>
+              </motion.div>
+            ) : (
+              <motion.p
+                key={infoText}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="text-center text-[14px] leading-6 text-[#5e5357]"
+              >
+                {infoText}
+              </motion.p>
+            )}
           </AnimatePresence>
         </div>
 
