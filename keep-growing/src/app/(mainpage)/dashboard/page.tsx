@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { saveDailyEntry } from '@/app/actions';
+import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
 
 /**
  * Hilfsfunktion für die ISO-Kalenderwoche
@@ -123,8 +124,14 @@ export default async function DashboardPage() {
               </div>
               <span className="text-[10px] uppercase tracking-[0.2em] mt-2 text-gray-400 font-bold">Training</span>
           </Link>
+
+          {/* Freunde-Icon (Logik liegt in blumengarten/freunde/DashboardFriends.tsx) */}
+          <FriendsButton />
         </div>
       </div>
+
+      {/* Ungelesene Freunde-Benachrichtigungen (blumengarten/freunde/DashboardFriends.tsx) */}
+      <FriendsNotifications />
 
       {/* Mood & Notes Formular */}
       <form action={saveDailyEntry} className="w-full max-w-md mb-10 text-left">

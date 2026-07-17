@@ -1,17 +1,61 @@
 # Änderungen außerhalb von `blumengarten/` – genaue Zeilen-Dokumentation
 
-Für die Team-Absprache: Diese zwei bestehenden Dateien außerhalb des
+Für die Team-Absprache: Diese drei bestehenden Dateien außerhalb des
 Blumengarten-Ordners wurden angepasst. Hier steht **jede geänderte Zeile**
-mit Begründung. Alles andere (neue Seiten, Komponenten, SQL) liegt als
-**neue Datei** in `blumengarten/` bzw. `blumengarten/freunde/` und
-verändert keinen bestehenden Code.
+mit Begründung. Alles andere (neue Seiten, Komponenten, SQL, Bilder) liegt
+als **neue Datei** in `blumengarten/`, `blumengarten/freunde/` oder
+`public/images/` und verändert keinen bestehenden Code.
 
 ---
 
-## 1. `src/app/(mainpage)/einstellungen/page.tsx`
+## 1. `src/app/(mainpage)/dashboard/page.tsx` (Startseite)
 
-**Zweck:** Manueller „Wiese zurücksetzen"-Button in den Einstellungen
-(zusätzlich zum Link im Blumengarten selbst).
+**Zweck:** Freunde-Button (mit Benachrichtigungspunkt) in der Icon-Reihe
+und ungelesene Benachrichtigungen auf der Startseite. Die gesamte Logik
+liegt in `blumengarten/freunde/DashboardFriends.tsx` – das Dashboard
+bekommt nur drei additive Einfügungen.
+
+### Änderung 1 – Import (neue Zeile 5, direkt nach dem `saveDailyEntry`-Import)
+
+```tsx
+import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
+```
+
+### Änderung 2 – Freunde-Button (neue Zeilen 127–129, direkt nach dem schließenden `</Link>` des Training-Icons, vor dem `</div>` der Icon-Reihe)
+
+```tsx
+          {/* Freunde-Icon (Logik liegt in blumengarten/freunde/DashboardFriends.tsx) */}
+          <FriendsButton />
+```
+
+Der Button hat denselben Stil wie die Garten-/Training-Icons (12×12,
+runde Ecken, Label in Großbuchstaben) und zeigt einen kleinen rosa Punkt,
+wenn ungelesene Benachrichtigungen vorliegen.
+
+### Änderung 3 – Benachrichtigungs-Banner (neue Zeilen 132–134, direkt nach dem schließenden `</div>` des Header-Bereichs, vor dem Mood-`<form>`)
+
+```tsx
+      {/* Ungelesene Freunde-Benachrichtigungen (blumengarten/freunde/DashboardFriends.tsx) */}
+      <FriendsNotifications />
+```
+
+Zeigt bis zu 3 ungelesene „X loves your flower meadow ♥"-Meldungen
+(inkl. mitgeschickter Nachricht) und verlinkt zur Freunde-Seite. Rendert
+`null`, wenn nichts Ungelesenes da ist oder die Migration fehlt – die
+Startseite sieht dann exakt aus wie vorher.
+
+**Nicht verändert:** Begrüßung, Mood-Formular, Insights-Graph, alle
+bestehenden Icons und Links. (Hinweis: Die zwei bestehenden
+ESLint-`no-explicit-any`-Fehler in Zeile 21/38 waren schon vor unseren
+Änderungen da und stammen nicht von uns.)
+
+---
+
+## 2. `src/app/(mainpage)/einstellungen/page.tsx`
+
+**Zweck:** Manueller „Reset your meadow"-Button in den Einstellungen.
+Der Reset-Link im Blumengarten selbst wurde entfernt – zurücksetzen geht
+jetzt **nur** hier.
 
 ### Änderung 1 – Funktionskopf (vorher Zeile 5, jetzt Zeilen 5–11)
 
@@ -32,9 +76,7 @@ export default async function EinstellungenPage({
   const { reset } = await searchParams;
 ```
 
-### Änderung 2 – Neue Server Action (eingefügt nach dem Ende von `handleLogout`, vorher Zeile 22, jetzt Zeilen 29–54)
-
-Komplett neu eingefügt (verändert keine bestehende Zeile):
+### Änderung 2 – Neue Server Action (eingefügt nach dem Ende von `handleLogout`, jetzt Zeilen 29–54)
 
 ```tsx
   /**
@@ -64,37 +106,38 @@ Komplett neu eingefügt (verändert keine bestehende Zeile):
   }
 ```
 
-### Änderung 3 – Neue UI-Sektion (eingefügt zwischen der Account-Sektion und dem Logout-Button, vorher Zeile 48, jetzt Zeilen 80–107)
+### Änderung 3 – Neue UI-Sektion (eingefügt zwischen Account-Sektion und Logout-Button, jetzt Zeilen 80–107)
 
-Komplett neu eingefügt, im selben Stil wie die Account-Sektion
-(`bg-[#f2f2eb] rounded-[25px]`). Der Reset ist hinter einem
-`<details>`-Aufklapper versteckt, damit niemand versehentlich klickt:
+Neue Sektion „Flower meadow" im selben Stil wie die Account-Sektion
+(`bg-[#f2f2eb] rounded-[25px]`), Texte auf Englisch. Der Reset ist hinter
+einem `<details>`-Aufklapper versteckt, damit niemand versehentlich klickt:
 
 ```tsx
-        {/* Blumenwiese Sektion */}
+        {/* Flower meadow Sektion */}
         <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
-          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Blumenwiese</h2>
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">Flower meadow</h2>
           {reset === 'fehler' && (
             <p className="mb-4 text-sm text-[#9b5d68]">
-              Das Zurücksetzen hat nicht geklappt. Wurde die Datenbank-Migration
-              (blumengarten/freunde/supabase-migration.sql) schon ausgeführt?
+              The reset did not work. Has the database migration
+              (blumengarten/freunde/supabase-migration.sql) been run yet?
             </p>
           )}
           <details className="group">
             <summary className="cursor-pointer list-none flex items-center justify-between text-gray-800 font-medium">
-              Wiese zurücksetzen
+              Reset your meadow
               <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
             </summary>
             <p className="mt-3 text-sm text-gray-400">
-              Deine bisherigen Blumen werden archiviert und deine Wiese beginnt
-              leer. Zum Monatsanfang passiert das automatisch.
+              Your current flowers will be archived and your meadow starts
+              fresh. This also happens automatically at the start of each
+              month.
             </p>
             <form action={handleGardenReset} className="mt-4">
               <button
                 type="submit"
                 className="w-full bg-[#c08a95] text-white py-3 rounded-[20px] font-bold shadow hover:bg-[#b67f8a] active:scale-[0.98] transition-all"
               >
-                Ja, Wiese jetzt zurücksetzen
+                Yes, reset my meadow now
               </button>
             </form>
           </details>
@@ -102,70 +145,57 @@ Komplett neu eingefügt, im selben Stil wie die Account-Sektion
 ```
 
 **Nicht verändert:** Auth-Check, `handleLogout`, Account-Sektion,
-Logout-Button, Footer – alles unangetastet.
+Logout-Button, Footer.
 
 ---
 
-## 2. `src/app/layout.tsx` (Root-Layout)
+## 3. `src/app/layout.tsx` (Root-Layout)
 
-**Zweck:** Browser-Benachrichtigungen („X gefällt deine Blumenwiese ♥")
-sollen auf **jeder** Seite ankommen, nicht nur im Blumengarten. Dafür wird
-eine unsichtbare Listener-Komponente einmalig im Layout eingebunden. Die
-gesamte Logik liegt in `blumengarten/freunde/LikeBenachrichtigungen.tsx` –
-das Layout bekommt nur zwei Zeilen.
+**Zweck:** Browser-Benachrichtigungen („X loves your flower meadow ♥")
+sollen auf **jeder** Seite ankommen. Die gesamte Logik liegt in
+`blumengarten/freunde/LikeNotifications.tsx` – das Layout bekommt nur
+zwei Zeilen.
 
 ### Änderung 1 – Import (neue Zeile 4, direkt nach `import "./globals.css";`)
 
 ```tsx
-import LikeBenachrichtigungen from "./(mainpage)/blumengarten/freunde/LikeBenachrichtigungen";
+import LikeNotifications from "./(mainpage)/blumengarten/freunde/LikeNotifications";
 ```
 
 ### Änderung 2 – Einbindung (neue Zeile 46, direkt vor `{children}` im `<body>`)
 
-Vorher (Zeilen 43–45):
-
 ```tsx
-      >
-        {children}
-      </body>
+        <LikeNotifications />
 ```
 
-Nachher:
-
-```tsx
-      >
-        <LikeBenachrichtigungen />
-        {children}
-      </body>
-```
-
-**Nicht verändert:** Fonts, Metadata, `<html lang="de">`, className –
-alles unangetastet. Die Komponente rendert `null` und hat keinerlei
-Einfluss auf das Layout oder Styling.
+**Nicht verändert:** Fonts, Metadata, `<html lang="de">`, className.
+Die Komponente rendert `null` und hat keinen Einfluss auf Layout oder
+Styling.
 
 ---
 
-## 3. Verhalten & Grenzen der Benachrichtigungen
+## 4. Verhalten & Grenzen der Benachrichtigungen
 
-- Aktiviert wird die Berechtigung über den Button „Aktivieren" auf der
-  Freunde-Seite (`/blumengarten/freunde`) – es gibt kein aufdringliches
-  Popup beim Seitenaufruf.
+- Aktivierung über den Button „Enable" auf der Freunde-Seite
+  (`/blumengarten/freunde`) – kein aufdringliches Popup beim Seitenaufruf.
 - Technik: Supabase **Realtime** auf der Tabelle `notifications`
-  (Realtime-Freischaltung ist Teil von `supabase-migration.sql`) plus die
-  **Notification API** des Browsers.
+  (Freischaltung ist Teil von `supabase-migration.sql`) plus die
+  **Notification API** des Browsers. Mitgeschickte Like-Nachrichten
+  erscheinen im Benachrichtigungstext.
 - Benachrichtigungen kommen an, solange die App in einem Tab geöffnet ist
-  (auch im Hintergrund-Tab / minimiertem Browser am Desktop).
+  (auch Hintergrund-Tab / minimierter Browser am Desktop).
 - **Echte** Push-Nachrichten bei komplett geschlossenem Browser (wie im
-  Sperrbildschirm-Mockup) bräuchten zusätzlich einen Service Worker,
-  VAPID-Schlüssel und eine Supabase Edge Function – das wäre der nächste
-  Ausbauschritt und braucht eine eigene Absprache.
+  Sperrbildschirm-Mockup) bräuchten zusätzlich Service Worker,
+  VAPID-Schlüssel und eine Supabase Edge Function – nächster
+  Ausbauschritt, braucht eigene Absprache.
 
 ---
 
-## 4. Checkliste für die Absprache
+## 5. Checkliste für die Absprache
 
 | Datei | Art der Änderung | Risiko |
 | --- | --- | --- |
-| `einstellungen/page.tsx` | 1 Zeile ersetzt (Funktionskopf), 2 Blöcke rein additiv eingefügt | Gering – bestehende Logik unverändert |
-| `app/layout.tsx` | 2 Zeilen rein additiv eingefügt (Import + Komponente) | Sehr gering – Komponente rendert `null` |
-| Supabase | `supabase-migration.sql` ausführen (Tabellen, Policies, Realtime) | Im Team absprechen |
+| `dashboard/page.tsx` | 3 rein additive Einfügungen (Import, Button, Banner) | Sehr gering – rendert ohne Migration exakt wie vorher |
+| `einstellungen/page.tsx` | 1 Zeile ersetzt (Funktionskopf), 2 Blöcke additiv | Gering – bestehende Logik unverändert |
+| `app/layout.tsx` | 2 Zeilen additiv (Import + Komponente) | Sehr gering – Komponente rendert `null` |
+| Supabase | `supabase-migration.sql` ausführen (Tabellen, Policies, Realtime; Upgrade-ALTERs für frühere Skript-Version enthalten) | Im Team absprechen |

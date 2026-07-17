@@ -172,14 +172,24 @@ create policy "garden_settings_update_own"
 -- ------------------------------------------------------------
 -- 4. garden_likes
 -- ------------------------------------------------------------
+-- Likes sind bewusst mehrfach möglich (kein Unique-Constraint): Nach dem
+-- Absenden springt das Herz zurück und es kann später erneut geliked
+-- werden. Optional kann eine kurze Nachricht mitgeschickt werden.
 create table if not exists public.garden_likes (
   id uuid primary key default gen_random_uuid(),
   garden_owner_id uuid not null references public.profiles (id) on delete cascade,
   liker_id uuid not null references public.profiles (id) on delete cascade,
+  message text,
   created_at timestamptz not null default now(),
-  unique (garden_owner_id, liker_id),
   check (garden_owner_id <> liker_id)
 );
+
+-- Upgrade für Installationen, die die frühere Version dieses Skripts
+-- (mit Unique-Constraint und ohne message-Spalte) bereits ausgeführt haben:
+alter table public.garden_likes
+  drop constraint if exists garden_likes_garden_owner_id_liker_id_key;
+alter table public.garden_likes
+  add column if not exists message text;
 
 alter table public.garden_likes enable row level security;
 
@@ -214,9 +224,14 @@ create table if not exists public.notifications (
   user_id uuid not null references public.profiles (id) on delete cascade,
   actor_id uuid references public.profiles (id) on delete set null,
   type text not null default 'garden_like',
+  message text,
   read boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Upgrade für Installationen mit der früheren Skript-Version:
+alter table public.notifications
+  add column if not exists message text;
 
 alter table public.notifications enable row level security;
 
@@ -243,8 +258,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.notifications (user_id, actor_id, type)
-  values (new.garden_owner_id, new.liker_id, 'garden_like');
+  insert into public.notifications (user_id, actor_id, type, message)
+  values (new.garden_owner_id, new.liker_id, 'garden_like', new.message);
   return new;
 end;
 $$;
