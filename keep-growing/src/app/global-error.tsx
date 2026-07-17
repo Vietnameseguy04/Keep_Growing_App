@@ -63,7 +63,9 @@ export default function GlobalError({
         <p>Etwas ist schiefgelaufen.</p>
         <button
           type="button"
-          onClick={() => reset()}
+          onClick={() =>
+            typeof reset === "function" ? reset() : window.location.reload()
+          }
           style={{
             borderRadius: 18,
             background: "#c08a95",

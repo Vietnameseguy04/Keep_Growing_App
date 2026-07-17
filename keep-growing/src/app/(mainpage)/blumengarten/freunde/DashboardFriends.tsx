@@ -4,20 +4,32 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-// Two small widgets for the dashboard (Startseite). All friends logic
-// stays inside blumengarten/freunde – the dashboard only mounts these:
-//
-//   <FriendsButton />        icon button (with unread dot) in the header row
-//   <FriendsNotifications /> compact banner listing unread notifications
-//
-// Both fail silently when the database migration has not been run yet.
+// The dashboard just mounts FriendsButton (icon + unread dot) and
+// FriendsNotifications (banner with the latest unread items). All the
+// actual friends logic stays here so the dashboard file barely changes.
+// Both quietly render nothing if the database migration isn't in yet.
 
 type NotificationRow = {
   id: string;
   actor_id: string | null;
+  type: string;
   message: string | null;
   read: boolean;
 };
+
+// Kept in sync with notificationText() in blumengarten/freunde/page.tsx
+// so the dashboard banner and the friends page agree on wording.
+function notificationText(type: string, actorName: string): string {
+  switch (type) {
+    case "friend_request":
+      return `${actorName} sent you a friend request`;
+    case "friend_accepted":
+      return `${actorName} accepted your friend request`;
+    case "garden_like":
+    default:
+      return `${actorName} loves your flower garden`;
+  }
+}
 
 function useUnreadNotifications() {
   const [unread, setUnread] = useState<NotificationRow[]>([]);
@@ -35,12 +47,15 @@ function useUnreadNotifications() {
 
       const { data, error } = await supabase
         .from("notifications")
-        .select("id, actor_id, message, read")
+        .select("id, actor_id, type, message, read")
         .eq("user_id", user.id)
         .eq("read", false)
         .order("created_at", { ascending: false })
         .limit(5);
 
+      if (error) {
+        console.error("Could not load notifications:", error);
+      }
       if (error || !data || !active) return;
       setUnread(data);
 
@@ -123,12 +138,19 @@ export function FriendsNotifications() {
           key={notification.id}
           className="text-[14px] leading-6 text-[#5e5357]"
         >
-          {(notification.actor_id && actorNames[notification.actor_id]) ||
-            "Someone"}{" "}
-          loves your flower meadow{" "}
-          <span aria-hidden="true" className="text-[#c08a95]">
-            ♥
-          </span>
+          {notificationText(
+            notification.type,
+            (notification.actor_id && actorNames[notification.actor_id]) ||
+              "Someone",
+          )}
+          {notification.type === "garden_like" && (
+            <>
+              {" "}
+              <span aria-hidden="true" className="text-[#c08a95]">
+                ♥
+              </span>
+            </>
+          )}
           {notification.message && (
             <span className="italic text-[#8a7d81]">
               {" "}
