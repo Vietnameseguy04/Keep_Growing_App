@@ -60,7 +60,7 @@ export default function FriendGardenPage() {
 
       setUserId(user.id);
 
-      // Only gardens of friends are visible (enforced by the RLS
+      // Only meadows of friends are visible (enforced by the RLS
       // policies in supabase-migration.sql).
       const { data: friendship, error: friendshipError } = await supabase
         .from("friendships")
@@ -73,7 +73,7 @@ export default function FriendGardenPage() {
 
       if (friendshipError || !friendship) {
         setErrorMessage(
-          "You can only visit this flower garden once you are friends.",
+          "You can only visit this flower meadow once you are friends.",
         );
         setLoading(false);
         return;
@@ -118,7 +118,7 @@ export default function FriendGardenPage() {
 
       if (flowerError) {
         setErrorMessage(
-          `The flower garden could not be loaded: ${flowerError.message}`,
+          `The flower meadow could not be loaded: ${flowerError.message}`,
         );
       } else {
         setFlowers(flowerData ?? []);
@@ -147,9 +147,7 @@ export default function FriendGardenPage() {
     });
 
     if (error) {
-      setErrorMessage(
-        `Your like could not be sent (${error.message}). If this keeps happening, please run the updated database migration (blumengarten/freunde/supabase-migration.sql) – it allows sending more than one like.`,
-      );
+      setErrorMessage("Your like could not be sent. Please try again.");
       setLikeBusy(false);
       return;
     }
@@ -165,7 +163,7 @@ export default function FriendGardenPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Loading the flower garden...</p>
+        <p className="text-[#7a6d71]">Loading the flower meadow...</p>
       </main>
     );
   }
@@ -210,7 +208,7 @@ export default function FriendGardenPage() {
               type="button"
               onClick={() => setLikeBoxOpen((open) => !open)}
               disabled={likeBusy}
-              aria-label="Like this flower garden"
+              aria-label="Like this flower meadow"
               aria-expanded={likeBoxOpen}
               className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f6e7ea] transition hover:bg-[#f2dce1] disabled:opacity-50"
             >
@@ -253,7 +251,7 @@ export default function FriendGardenPage() {
                   onChange={(e) => setLikeMessage(e.target.value)}
                   maxLength={200}
                   rows={2}
-                  placeholder="wow, your garden looks lovely..."
+                  placeholder="wow, your meadow looks lovely..."
                   className="w-full resize-none rounded-[16px] bg-[#f6f3f1] px-4 py-3 text-[14px] text-[#5e5357] placeholder-[#b2a8ab] outline-none focus:ring-1 focus:ring-[#c08a95]"
                 />
                 <div className="mt-3 flex justify-end gap-2">
@@ -388,7 +386,7 @@ export default function FriendGardenPage() {
             onClick={() => router.push("/blumengarten")}
             className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
           >
-            go back to your flower garden
+            go back to your flower meadow
           </button>
         </div>
 

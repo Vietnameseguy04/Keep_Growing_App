@@ -189,7 +189,7 @@ export default function BlumengartenPage() {
 
       if (error) {
         setErrorMessage(
-          `Your flower garden could not be loaded: ${error.message}`,
+          `Your flower meadow could not be loaded: ${error.message}`,
         );
       } else {
         setFlowers(data ?? []);
@@ -338,11 +338,6 @@ export default function BlumengartenPage() {
     setMode("view");
   }
 
-  // A flower is waiting from training as long as it hasn't been placed
-  // yet (kept simple: localStorage only ever holds one pending flower,
-  // so this stays a single reminder rather than a list - no DB needed).
-  const showFlowerReadyBanner = mode === "place-new" && !pendingNewFlower;
-
   const infoText =
     mode === "place-new"
       ? pendingNewFlower
@@ -354,12 +349,12 @@ export default function BlumengartenPage() {
           ? pendingEditPosition
             ? "Does this new place feel right for your flower?"
             : "Choose a new place for your flower."
-          : "Lovely to see you again! Watch your flower garden & your mind slowly grow.";
+          : "Lovely to see you again! Watch your flower meadow & your mind slowly grow.";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f6f3f1] flex items-center justify-center">
-        <p className="text-[#7a6d71]">Loading your flower garden...</p>
+        <p className="text-[#7a6d71]">Loading your flower meadow...</p>
       </main>
     );
   }
@@ -412,30 +407,16 @@ export default function BlumengartenPage() {
         {/* Fixed height so the meadow below never jumps when the text changes */}
         <div className="mb-6 flex min-h-[56px] items-center justify-center px-4">
           <AnimatePresence mode="wait" initial={false}>
-            {showFlowerReadyBanner ? (
-              <motion.div
-                key="flower-ready-banner"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="flex items-center justify-center gap-2 rounded-[18px] bg-[#f6e7ea] px-5 py-3 text-center text-[14px] leading-6 text-[#5e5357]"
-              >
-                <span aria-hidden="true">🌸</span>
-                <span>Your new flower is ready to plant!</span>
-              </motion.div>
-            ) : (
-              <motion.p
-                key={infoText}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="text-center text-[14px] leading-6 text-[#5e5357]"
-              >
-                {infoText}
-              </motion.p>
-            )}
+            <motion.p
+              key={infoText}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="text-center text-[14px] leading-6 text-[#5e5357]"
+            >
+              {infoText}
+            </motion.p>
           </AnimatePresence>
         </div>
 
@@ -578,11 +559,11 @@ export default function BlumengartenPage() {
                 <p className="px-4 text-center text-[15px] leading-6 text-[#5e5357]">
                   Make a difference! Support biodiversity
                   <br />
-                  with a donation to Plantlife&apos;s
+                  with a wildflower meadow sponsorship
                   <br />
-                  Save the Last Meadows appeal.{" "}
+                  for 2,99 €.{" "}
                   <a
-                    href="https://www.plantlife.org.uk/donations/save-the-last-meadows/"
+                    href="https://bluehende-landschaft.de/bluehpatenschaften-mit-echter-wirkung/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline underline-offset-2 transition hover:text-[#c08a95]"
@@ -602,7 +583,7 @@ export default function BlumengartenPage() {
                     onClick={() => router.push("/blumengarten/freunde")}
                     className="text-[14px] text-[#5e5357] underline underline-offset-2 transition hover:text-[#c08a95]"
                   >
-                    discover your friends&apos; flower gardens
+                    discover your friends&apos; flower meadows
                   </button>
                 </div>
               </motion.div>

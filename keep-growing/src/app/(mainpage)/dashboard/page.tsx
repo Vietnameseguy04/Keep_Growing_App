@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { saveDailyEntry } from '@/app/actions';
 import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
-import DashboardGardenButton from '../blumengarten/DashboardGardenButton';
 
 /**
  * Hilfsfunktion für die ISO-Kalenderwoche

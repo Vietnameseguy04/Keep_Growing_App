@@ -11,38 +11,18 @@ und verändert keinen bestehenden Code.
 
 ## 1. `src/app/(mainpage)/dashboard/page.tsx` (Startseite)
 
-**Zweck:** Freunde-Button (mit Benachrichtigungspunkt) in der Icon-Reihe,
-ungelesene Benachrichtigungen auf der Startseite, und derselbe rote Punkt
-jetzt auch am Garten-Icon, wenn eine trainierte Blume noch aufs
-Einpflanzen wartet. Die gesamte Logik liegt in
-`blumengarten/freunde/DashboardFriends.tsx` bzw.
-`blumengarten/DashboardGardenButton.tsx` – das Dashboard bekommt nur
-Import + Austausch der bestehenden Icon-Elemente.
+**Zweck:** Freunde-Button (mit Benachrichtigungspunkt) in der Icon-Reihe
+und ungelesene Benachrichtigungen auf der Startseite. Die gesamte Logik
+liegt in `blumengarten/freunde/DashboardFriends.tsx` – das Dashboard
+bekommt nur drei additive Einfügungen.
 
-### Änderung 1 – Imports (neue Zeilen 5–6, direkt nach dem `saveDailyEntry`-Import)
+### Änderung 1 – Import (neue Zeile 5, direkt nach dem `saveDailyEntry`-Import)
 
 ```tsx
 import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
-import DashboardGardenButton from '../blumengarten/DashboardGardenButton';
 ```
 
-### Änderung 2 – Garten-Icon ersetzt (bisheriges `<Link href="/blumengarten">`-Markup entfernt, durch eine Zeile ersetzt)
-
-Vorher stand hier das komplette Garten-Icon-Markup direkt im Dashboard
-(SVG, Link, Label). Es wurde 1:1 in `DashboardGardenButton.tsx`
-übernommen und hier durch die Komponente ersetzt:
-
-```tsx
-          {/* Blumengarten-Icon (Logik liegt in blumengarten/DashboardGardenButton.tsx) */}
-          <DashboardGardenButton />
-```
-
-`DashboardGardenButton` rendert exakt dasselbe Icon wie vorher (gleiches
-SVG, gleicher Link, gleiches Label „Garten") und zeigt zusätzlich denselben
-roten Punkt-Stil wie beim Freunde-Icon, sobald `localStorage` einen
-gewählten, noch nicht gepflanzten Trainings-Blumentyp enthält.
-
-### Änderung 3 – Freunde-Button (neue Zeilen, direkt nach dem schließenden `</Link>` bzw. jetzt `</DashboardGardenButton>`-Aufruf des Training-Icons, vor dem `</div>` der Icon-Reihe)
+### Änderung 2 – Freunde-Button (neue Zeilen 127–129, direkt nach dem schließenden `</Link>` des Training-Icons, vor dem `</div>` der Icon-Reihe)
 
 ```tsx
           {/* Freunde-Icon (Logik liegt in blumengarten/freunde/DashboardFriends.tsx) */}
@@ -53,48 +33,26 @@ Der Button hat denselben Stil wie die Garten-/Training-Icons (12×12,
 runde Ecken, Label in Großbuchstaben) und zeigt einen kleinen rosa Punkt,
 wenn ungelesene Benachrichtigungen vorliegen.
 
-### Änderung 4 – Benachrichtigungs-Banner (direkt nach dem schließenden `</div>` des Header-Bereichs, vor dem Mood-`<form>`)
+### Änderung 3 – Benachrichtigungs-Banner (neue Zeilen 132–134, direkt nach dem schließenden `</div>` des Header-Bereichs, vor dem Mood-`<form>`)
 
 ```tsx
       {/* Ungelesene Freunde-Benachrichtigungen (blumengarten/freunde/DashboardFriends.tsx) */}
       <FriendsNotifications />
 ```
 
-Zeigt bis zu 3 ungelesene Meldungen (Likes, Freundschaftsanfragen,
-Annahmen) und verlinkt zur Freunde-Seite. Rendert `null`, wenn nichts
-Ungelesenes da ist oder die Migration fehlt – die Startseite sieht dann
-exakt aus wie vorher.
+Zeigt bis zu 3 ungelesene „X loves your flower meadow ♥"-Meldungen
+(inkl. mitgeschickter Nachricht) und verlinkt zur Freunde-Seite. Rendert
+`null`, wenn nichts Ungelesenes da ist oder die Migration fehlt – die
+Startseite sieht dann exakt aus wie vorher.
 
-**Nicht verändert:** Begrüßung, Mood-Formular, Insights-Graph,
-Einstellungs- und Training-Icon. Das Garten-Icon sieht optisch identisch
-aus wie vorher (gleiches SVG, gleicher Link, gleiches Label), nur die
-Implementierung wanderte in eine eigene Komponente. (Hinweis: Der
-bestehende ESLint-`no-explicit-any`-Fehler in `getTrainingStats` war schon
-vor unseren Änderungen da und stammt nicht von uns.)
+**Nicht verändert:** Begrüßung, Mood-Formular, Insights-Graph, alle
+bestehenden Icons und Links. (Hinweis: Die zwei bestehenden
+ESLint-`no-explicit-any`-Fehler in Zeile 21/38 waren schon vor unseren
+Änderungen da und stammen nicht von uns.)
 
 ---
 
-## 2. `src/app/global-error.tsx` (neue Datei)
-
-**Zweck:** Der `ChunkLoadError`, der immer wieder beim Öffnen/Aktualisieren
-der Seite auftauchte – meist direkt nachdem im Hintergrund ein neuer
-Deploy passiert ist und der Browser noch auf den alten Build zeigt.
-Bisher landete man dabei auf einer roten Next.js-Fehlerseite.
-
-Next.js bietet dafür extra `global-error.tsx`: die einzige Stelle, die
-Fehler abfangen kann, die im Root-Layout selbst passieren (`layout.tsx`,
-z.B. beim Rendern von `<LikeNotifications />`) – ein normales `error.tsx`
-greift dort nicht. Die Datei erkennt speziell `ChunkLoadError` und lädt
-die Seite dann automatisch einmal neu, statt die Fehlerseite zu zeigen.
-Bei jedem anderen (echten) Fehler gibt es weiterhin einen Hinweis mit
-„Erneut versuchen"-Button.
-
-Komplett neue, eigenständige Datei – verändert keine bestehende Zeile in
-`layout.tsx` oder sonst wo.
-
----
-
-## 3. `src/app/(mainpage)/einstellungen/page.tsx`
+## 2. `src/app/(mainpage)/einstellungen/page.tsx`
 
 **Zweck:** Manueller „Reset your meadow"-Button in den Einstellungen.
 Der Reset-Link im Blumengarten selbst wurde entfernt – zurücksetzen geht
@@ -192,7 +150,7 @@ Logout-Button, Footer.
 
 ---
 
-## 4. `src/app/layout.tsx` (Root-Layout)
+## 3. `src/app/layout.tsx` (Root-Layout)
 
 **Zweck:** Browser-Benachrichtigungen („X loves your flower meadow ♥")
 sollen auf **jeder** Seite ankommen. Die gesamte Logik liegt in
@@ -217,7 +175,7 @@ Styling.
 
 ---
 
-## 5. Verhalten & Grenzen der Benachrichtigungen
+## 4. Verhalten & Grenzen der Benachrichtigungen
 
 - Aktivierung über den Button „Enable" auf der Freunde-Seite
   (`/blumengarten/freunde`) – kein aufdringliches Popup beim Seitenaufruf.
@@ -234,7 +192,7 @@ Styling.
 
 ---
 
-## 6. Checkliste für die Absprache
+## 5. Checkliste für die Absprache
 
 | Datei | Art der Änderung | Risiko |
 | --- | --- | --- |
