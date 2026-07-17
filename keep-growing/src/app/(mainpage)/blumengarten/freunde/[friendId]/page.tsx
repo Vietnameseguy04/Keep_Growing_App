@@ -352,7 +352,7 @@ export default function FriendGardenPage() {
                 key={flower.id}
                 src={
                   flowerImageById[flower.flower_type] ??
-                  "/images/flower-real-1.png"
+                  "/images/flower-pressed-1.png"
                 }
                 alt={flowerTitleById[flower.flower_type] ?? flower.flower_type}
                 className="absolute w-[58px] object-contain"

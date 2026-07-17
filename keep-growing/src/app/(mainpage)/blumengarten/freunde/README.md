@@ -10,14 +10,17 @@ Dokumentation der Änderungen rund um den Blumengarten (Stand: Juli 2026).
   („Gravity & warmth", „Imaginative training", „Inner peace",
   „Self-empowerment").
 - **Kleinere Blumen** (58 px) für einen Wiesen-Look.
-- **Zwei umschaltbare Blumen-Stile** in `flowers.ts` (`FLOWER_STYLE`):
-  - `"real"` (aktiv): die Original-Aquarellblumen der Auftraggeber,
-    direkt aus der Design-PDF extrahiert
-    (`public/images/flower-real-1..4.png`, transparent)
+- **Drei umschaltbare Blumen-Stile** in `flowers.ts` (`FLOWER_STYLE`):
+  - `"pressed"` (aktiv): echte Pressblumen **mit Stiel**, extrahiert aus
+    den Garten-Mockups der Auftraggeber-PDF
+    (`public/images/flower-pressed-1..4.png`: rosa Cosmee,
+    Löwenmäulchen, Wachsblume, Kornblume)
+  - `"blossom"`: die Aquarell-Blütenköpfe aus dem Auswahl-Mockup der PDF
+    (`public/images/flower-real-1..4.png`)
   - `"watercolor"`: selbst gezeichnete SVG-Wildblumen mit Stiel
     (`public/images/wildblume-1..4.svg`)
   Pro Training gibt es eine eigene Blume. Zum Umschalten nur den Wert
-  von `FLOWER_STYLE` ändern.
+  von `FLOWER_STYLE` ändern – alle Bild-Sets bleiben im images-Ordner.
 - **Grüner Wiesen-Hintergrund**: weicher Verlauf mit organischen Hügeln,
   lockeren Grasbüscheln, dezenter Textur und kleinen Blüten-Tupfern.
 - **Sanfte Übergänge**: Info-Text und Fußbereich haben feste Höhen und

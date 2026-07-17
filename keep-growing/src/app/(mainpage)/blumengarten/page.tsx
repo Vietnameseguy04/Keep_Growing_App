@@ -430,7 +430,7 @@ export default function BlumengartenPage() {
           {flowers.map((flower) => {
             const imageSrc =
               flowerImageById[flower.flower_type] ??
-              "/images/flower-real-1.png";
+              "/images/flower-pressed-1.png";
             const flowerTitle =
               flowerTitleById[flower.flower_type] ?? flower.flower_type;
             const isEditingSelected = editingFlowerId === flower.id;
@@ -475,7 +475,7 @@ export default function BlumengartenPage() {
             <img
               src={
                 flowerImageById[pendingNewFlower.flower_type] ??
-                "/images/flower-real-1.png"
+                "/images/flower-pressed-1.png"
               }
               alt="Preview of your new flower"
               className="pointer-events-none absolute w-[58px] object-contain opacity-80"
