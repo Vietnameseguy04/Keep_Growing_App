@@ -56,6 +56,77 @@ export async function handleSignUp(formData: FormData) {
   return { success: true };
 }
 
+
+// Passwort-Reset-Link per E-Mail versenden
+export async function handleForgotPassword(formData: FormData) {
+  const email = formData.get('email') as string;
+
+  if (!email) {
+    return {
+      error: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${
+      process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }/reset-password/callback`,
+  });
+
+  if (error) {
+    return {
+      error: error.message,
+    };
+  }
+
+  return {
+    success: true,
+  };
+}
+
+
+// Neues Passwort setzen
+export async function handleResetPassword(formData: FormData) {
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!password || !confirmPassword) {
+    return {
+      error: 'Bitte fülle alle Felder aus.',
+    };
+  }
+
+  if (password !== confirmPassword) {
+    return {
+      error: 'Die Passwörter stimmen nicht überein.',
+    };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    return {
+      error: error.message,
+    };
+  }
+
+  // Recovery-Session nach erfolgreicher Passwortänderung beenden
+  await supabase.auth.signOut();
+
+  revalidatePath('/', 'layout');
+
+  return {
+    success: true,
+  };
+}
+
+
 // Falls du deine addNote Funktion behalten willst, kannst du sie hier drunter stehen lassen:
 export async function addNote(formData: FormData) {
   const supabase = await createClient();
@@ -71,10 +142,12 @@ export async function addNote(formData: FormData) {
   revalidatePath('/dashboard');
 }
 
+
 // src/app/actions.ts
 export async function saveDailyEntry(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
   if (!user) return;
 
   const score = formData.get('score');
