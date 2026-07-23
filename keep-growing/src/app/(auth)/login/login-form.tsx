@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { handleLogin } from '@/app/actions';
 
 export default function LoginForm() {
@@ -35,12 +36,39 @@ export default function LoginForm() {
             showPassword ? "text-gray-800" : "text-gray-400"
           }`}
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
-            {!showPassword && <line x1="3" y1="21" x2="21" y2="3" stroke="currentColor" strokeWidth="2" />}
+
+            {!showPassword && (
+              <line
+                x1="3"
+                y1="21"
+                x2="21"
+                y2="3"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            )}
           </svg>
         </button>
+      </div>
+
+      {/* Passwort vergessen */}
+      <div className="text-right -mt-4">
+        <Link
+          href="/forgot-password"
+          className="text-sm text-[#b57a84] font-semibold hover:underline"
+        >
+          Forgot Password?
+        </Link>
       </div>
 
       <button 
