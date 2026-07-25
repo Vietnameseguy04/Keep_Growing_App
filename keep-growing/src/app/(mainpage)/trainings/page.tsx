@@ -120,7 +120,7 @@ export default function TrainingsPage() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center text-[#b57a84] font-bold tracking-widest uppercase text-xs">
-        Lade Garten...
+        Loading garden...
       </div>
     );
 
@@ -160,8 +160,8 @@ export default function TrainingsPage() {
               </Link>
 
               <h2 className="font-[family-name:var(--font-cursive)] text-[#c5c1aa] text-4xl mb-10 lowercase text-center leading-[1.3] px-6 mt-4">
-                wähle heute dein autogenes training <br /> und lass deinen geist
-                wachsen
+                choose your autogenic training today <br /> and let your mind
+                grow
               </h2>
 
               <div className="w-full max-w-md space-y-4 max-h-[45vh] overflow-y-auto pr-2 custom-scrollbar text-left">
@@ -190,7 +190,7 @@ export default function TrainingsPage() {
                   ))
                 ) : (
                   <p className="text-gray-400 text-sm italic py-10 text-center text-xs">
-                    Keine Trainings gefunden...
+                    No trainings found...
                   </p>
                 )}
               </div>
@@ -224,9 +224,9 @@ export default function TrainingsPage() {
                   🌸
                   <div className="absolute inset-0 flex items-center justify-center text-center">
                     <span className="text-[10px] font-bold text-[#4a4a4a] uppercase tracking-widest leading-tight">
-                      Halten zum
+                      Hold to
                       <br />
-                      Starten
+                      start
                     </span>
                   </div>
                 </motion.div>
@@ -236,7 +236,7 @@ export default function TrainingsPage() {
                 animate={{ opacity: [0.3, 0.7, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                Gedrückt halten für: {activeTraining.title}
+                Press and hold for: {activeTraining.title}
               </motion.p>
             </motion.div>
           )}
@@ -283,7 +283,7 @@ export default function TrainingsPage() {
               <div className="w-full mb-8 px-4 max-h-[120px] overflow-y-auto custom-scrollbar">
                 <p className="text-[#4a4a4a]/70 text-sm leading-relaxed font-medium italic">
                   {activeTraining.description ||
-                    "Atme tief ein und aus... Lass alle Anspannung los und konzentriere dich ganz auf den Moment."}
+                    "Breathe in and out deeply... Release all tension and focus entirely on the present moment."}
                 </p>
               </div>
 
@@ -407,10 +407,10 @@ export default function TrainingsPage() {
                   className="bg-white/95 p-10 rounded-[50px] text-center shadow-2xl max-w-md border border-white/40 z-20 relative"
                 >
                   <h2 className="text-gray-800 font-bold text-2xl mb-2 italic">
-                    Wunderschön!
+                    Wonderful!
                   </h2>
                   <p className="text-gray-600 font-medium text-lg mb-8 leading-relaxed">
-                    Du hast eine neue Blume für deinen Garten erhalten.
+                    You received a new flower for your garden.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -418,13 +418,13 @@ export default function TrainingsPage() {
                       href="/blumengarten"
                       className="inline-block bg-[#b57a84] text-white px-8 py-4 rounded-full font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg hover:bg-[#a36973] transition-colors whitespace-nowrap"
                     >
-                      Zum Blumengarten
+                      To Flower Garden
                     </Link>
                     <Link
                       href="/"
                       className="inline-block bg-gray-200 text-gray-700 px-8 py-4 rounded-full font-bold uppercase text-[10px] tracking-[0.2em] shadow-md hover:bg-gray-300 transition-colors whitespace-nowrap"
                     >
-                      Zur Startseite
+                      Back to Home
                     </Link>
                   </div>
                 </motion.div>
