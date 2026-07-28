@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { saveDailyEntry } from '@/app/actions';
 import { FriendsButton, FriendsNotifications } from '../blumengarten/freunde/DashboardFriends';
 import DashboardGardenButton from '../blumengarten/DashboardGardenButton';
@@ -47,6 +48,7 @@ async function getTrainingStats(supabase: any, userId: string): Promise<{ kw: nu
       count: error ? 0 : (count || 0)
     });
   }
+
   return stats;
 }
 
@@ -107,14 +109,21 @@ export default async function DashboardPage() {
           <DashboardGardenButton />
 
           {/* Training-Icon */}
-          <Link href="/trainings" className="flex flex-col items-center group">
-              <div className="w-12 h-12 border border-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-50 transition-colors shadow-sm">
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b57a84" strokeWidth="1.5">
-                   <path d="M12 7a2 2 0 100-4 2 2 0 000 4zM5 12l2-1 3 2 2-2 3 2 2-2M7 21h10" strokeLinecap="round" strokeLinejoin="round"/>
-                 </svg>
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] mt-2 text-gray-400 font-bold">Training</span>
-          </Link>
+<Link href="/trainings" className="flex flex-col items-center group">
+  <div className="w-12 h-12 border border-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-50 transition-colors shadow-sm">
+    <Image
+      src="/images/autogenes-training.png"
+      alt="Autogenes Training"
+      width={34}
+      height={34}
+      className="object-contain"
+    />
+  </div>
+
+  <span className="text-[10px] uppercase tracking-[0.2em] mt-2 text-gray-400 font-bold">
+    Training
+  </span>
+</Link>
 
           {/* Freunde-Icon (Logik liegt in blumengarten/freunde/DashboardFriends.tsx) */}
           <FriendsButton />
@@ -252,9 +261,9 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-auto py-12 text-center">
-         <Link href="/impressum" className="text-[10px] text-gray-300 underline uppercase tracking-[0.3em] font-bold hover:text-gray-600 transition-colors">
-            About us
-         </Link>
+        <Link href="/impressum" className="text-[10px] text-gray-300 underline uppercase tracking-[0.3em] font-bold hover:text-gray-600 transition-colors">
+          About us
+        </Link>
       </div>
     </main>
   );
