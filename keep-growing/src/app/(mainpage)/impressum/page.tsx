@@ -4,7 +4,7 @@ export default function ImpressumPage() {
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-start font-[family-name:var(--font-geist-sans)]">
       
-      {/* Header Bereich mit Home-Icon (Mockup Page 16) */}
+      {/* Header Bereich mit Home-Icon */}
       <div className="w-full max-w-md p-8 pt-12 flex justify-end">
         <Link href="/dashboard" className="text-[#b57a84] hover:scale-110 transition-transform">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -22,34 +22,36 @@ export default function ImpressumPage() {
           <div className="h-1 w-12 bg-[#f2f2eb] mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* Content-Bereich (Mockup Page 16 Links) */}
+        {/* Content-Bereich */}
         <div className="space-y-12">
           
           <section>
-            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Impressum</h2>
+            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Imprint</h2>
             <div className="text-gray-500 text-sm leading-relaxed space-y-1">
-              <p className="font-bold text-gray-700">Keep Growing GmbH</p>
-              <p>Blütenweg 12</p>
-              <p>12345 Gartenstadt</p>
-              <p className="pt-2">Vertreten durch: Johanna Blume</p>
-              <p>E-Mail: hello@keep-growing.de</p>
+              <p className="font-bold text-gray-700">Keep Growing GbR</p>
+              <p>Oberamteigasse 4</p>
+              <p>88214 Ravensburg, Germany</p>
+              <p className="pt-2">Represented by: Johanna Beckmann, Victoria Stein</p>
+              <p>Email: kontakt@keepgrowing.app</p>
+              <p>Phone: +49 176 12345678</p>
+              <p className="pt-2 italic text-xs">Developed by: Florian Trapp, Elias Huber, Marlon Brunner</p>
             </div>
           </section>
 
           <section>
-            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">AGB's</h2>
+            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Terms & Conditions</h2>
             <p className="text-gray-500 text-sm leading-relaxed">
-              Unsere allgemeinen Geschäftsbedingungen regeln die Nutzung der App und die Teilnahme an unseren Wildblumen-Patenschaften. Wir legen Wert auf Transparenz und ein achtsames Miteinander.
+              Our Terms and Conditions govern the use of the app and participation in our wildflower sponsorships. We value transparency and mindful interactions.
             </p>
-            <button className="text-[#b57a84] text-xs font-bold mt-2 hover:underline">Vollständige AGB lesen</button>
+            <button className="text-[#b57a84] text-xs font-bold mt-2 hover:underline">Read full T&Cs</button>
           </section>
 
           <section>
-            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Datenschutz</h2>
+            <h2 className="text-[#c5c1aa] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Privacy Policy</h2>
             <p className="text-gray-500 text-sm leading-relaxed">
-              Deine mentalen Fortschritte sind privat. Wir verschlüsseln alle Notizen und geben keine Daten an Dritte weiter. Die Analyse deiner "Insights" erfolgt lokal auf deinem Profil.
+              Your mental progress is private. We encrypt all notes and do not share your data with third parties. The analysis of your insights is processed locally and securely.
             </p>
-            <button className="text-[#b57a84] text-xs font-bold mt-2 hover:underline">Datenschutzerklärung</button>
+            <button className="text-[#b57a84] text-xs font-bold mt-2 hover:underline">Read Privacy Policy</button>
           </section>
 
         </div>
@@ -63,4 +65,4 @@ export default function ImpressumPage() {
       </div>
     </main>
   );
-}  
+}
