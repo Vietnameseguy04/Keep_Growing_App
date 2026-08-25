@@ -168,7 +168,7 @@ export default async function DashboardPage() {
           name="note"
           defaultValue={entry?.note || ''}
           className="w-full h-32 bg-[#f2f2eb] rounded-[25px] p-5 outline-none resize-none border-none text-gray-700 shadow-inner placeholder-gray-400"
-          placeholder="Schreibe hier deine Gedanken..."
+          placeholder="Write your thoughts here..."
         />
         
         <div className="flex justify-end items-center mt-6">
