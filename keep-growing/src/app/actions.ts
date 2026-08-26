@@ -119,8 +119,6 @@ export async function handleResetPassword(formData: FormData) {
   // Recovery-Session nach erfolgreicher Passwortänderung beenden
   await supabase.auth.signOut();
 
-  revalidatePath('/', 'layout');
-
   return {
     success: true,
   };

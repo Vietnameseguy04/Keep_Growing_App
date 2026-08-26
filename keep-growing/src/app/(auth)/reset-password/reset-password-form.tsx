@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { handleResetPassword } from '@/app/actions';
 
 export default function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter(); // Router ist wieder da!
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
@@ -13,11 +15,14 @@ export default function ResetPasswordForm() {
 
     const result = await handleResetPassword(formData);
 
-    // Da bei Erfolg jetzt automatisch über die Server Action umgeleitet wird, 
-    // landen wir nur hier unten, wenn es einen Fehler gab.
-    if (result?.error) {
-      setError(result.error);
+    if (result?.success) {
+      // Katapultiert dich direkt und ohne Modal zum Login
+      router.push('/login');
+    } else {
       setIsLoading(false);
+      if (result?.error) {
+        setError(result.error);
+      }
     }
   }
 
