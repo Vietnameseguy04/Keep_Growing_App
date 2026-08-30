@@ -2,11 +2,9 @@
 
 # KEEP GROWING
 
-</div>
+<img width="300" src="./images/Yoga_Frau.jpg" alt="Keep Growing Yoga Frau" />
 
-<p align="center">
-  <img width="300" alt="Keep Growing" src="public/images/Yoga_Frau.jpg" />
-</p>
+</div>
 
 ## Dein Set-up für mentales Wachstum
 
