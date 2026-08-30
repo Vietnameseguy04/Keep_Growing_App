@@ -1,3 +1,13 @@
+<div align="center">
+
+# KEEP GROWING
+
+</div>
+
+<p align="center">
+  <img width="300" alt="Keep Growing" src="public/images/Yoga_Frau.jpg" />
+</p>
+
 ## Dein Set-up für mentales Wachstum
 
 [Zum Login](https://keep-growing-jet.vercel.app/login) | [Live Demo](https://keep-growing-jet.vercel.app)
