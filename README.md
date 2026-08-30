@@ -2,7 +2,7 @@
 
 # KEEP GROWING
 
-<img width="300" src="./images/Yoga_Frau.jpg" alt="Keep Growing Yoga Frau" />
+<img width="300" src="https://raw.githubusercontent.com/Florian565/Keep_Growing/main/keep-growing/public/images/Yoga_Frau.jpg" alt="Keep Growing Yoga Frau" />
 
 </div>
 
