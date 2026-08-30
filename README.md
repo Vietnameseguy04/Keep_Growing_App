@@ -4,9 +4,9 @@
 
 <img width="300" src="./keep-growing/public/images/Yoga_Frau.jpg" alt="Keep Growing Yoga Frau" />
 
-</div>
+<hr style="border: none; height: 1px; background-color: #30363d; width: 100%; margin: 20px 0;" />
 
----
+</div>
 
 ## Dein Set-up für mentales Wachstum
 
