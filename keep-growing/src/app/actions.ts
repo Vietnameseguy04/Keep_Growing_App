@@ -33,6 +33,10 @@ export async function handleSignUp(formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string;
   const name = formData.get('name') as string;
 
+  if (!email.toLowerCase().match(/@(student\.)?dhbw/)) {
+    return { error: 'no-dhbw-email' };
+  }
+
   if (password !== confirmPassword) {
     return { error: 'passwords-dont-match' };
   }
@@ -125,7 +129,22 @@ export async function handleResetPassword(formData: FormData) {
 }
 
 
-// Falls du deine addNote Funktion behalten willst, kannst du sie hier drunter stehen lassen:
+// Account und alle Daten löschen (DSGVO Art. 17)
+export async function deleteAccount() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return redirect('/login');
+
+  await Promise.all([
+    supabase.from('daily_entries').delete().eq('user_id', user.id),
+    supabase.from('flowers').delete().eq('user_id', user.id),
+    supabase.from('garden_settings').delete().eq('user_id', user.id),
+  ]);
+
+  await supabase.auth.admin.deleteUser(user.id);
+  await supabase.auth.signOut();
+  redirect('/login?deleted=true');
+}
 export async function addNote(formData: FormData) {
   const supabase = await createClient();
   const note = formData.get('note') as string;

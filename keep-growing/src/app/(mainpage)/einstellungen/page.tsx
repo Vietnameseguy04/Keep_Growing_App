@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { deleteAccount } from '@/app/actions';
+import PushNotificationToggle from './PushNotificationToggle';
 
 export default async function EinstellungenPage({
   searchParams,
@@ -297,9 +299,20 @@ export default async function EinstellungenPage({
           </details>
         </section>
 
+        {/* Notifications Sektion */}
+        <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">
+            Reminders
+          </h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Get a daily push notification to remind you of your training.
+          </p>
+          <PushNotificationToggle />
+        </section>
+
         {/* Logout Button */}
         <form action={handleLogout}>
-          <button 
+          <button
             type="submit"
             className="w-full bg-[#b57a84] text-white py-4 rounded-[20px] font-bold shadow-lg hover:bg-[#a36972] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           >
@@ -319,6 +332,43 @@ export default async function EinstellungenPage({
             Log out
           </button>
         </form>
+
+        {/* Datenschutz / DSGVO Sektion */}
+        <section className="bg-[#f2f2eb] rounded-[25px] p-6 shadow-sm">
+          <h2 className="text-gray-400 uppercase text-[10px] tracking-[0.2em] font-bold mb-4">
+            Privacy (DSGVO)
+          </h2>
+
+          {/* Datenexport */}
+          <a
+            href="/api/export"
+            download="keep-growing-data.json"
+            className="block w-full text-center border border-[#c08a95] text-[#c08a95] py-3 rounded-[20px] font-bold hover:bg-[#f9f0f1] active:scale-[0.98] transition-all mb-4"
+          >
+            Export my data (Art. 20 DSGVO)
+          </a>
+
+          {/* Account löschen */}
+          <details className="group">
+            <summary className="cursor-pointer list-none flex items-center justify-between text-red-500 font-medium">
+              Delete account
+              <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
+            </summary>
+
+            <p className="mt-3 text-sm text-gray-400">
+              All your data (diary entries, flowers, settings) will be permanently deleted. This cannot be undone.
+            </p>
+
+            <form action={deleteAccount} className="mt-4">
+              <button
+                type="submit"
+                className="w-full bg-red-500 text-white py-3 rounded-[20px] font-bold shadow hover:bg-red-600 active:scale-[0.98] transition-all"
+              >
+                Yes, permanently delete my account
+              </button>
+            </form>
+          </details>
+        </section>
       </div>
 
       {/* Footer */}

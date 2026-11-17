@@ -19,6 +19,11 @@ export default function RegisterForm() {
     } else {
       setIsLoading(false);
       // Fehler-Parameter wird an die URL gehängt, falls vorhanden
+      if (result?.error === 'no-dhbw-email') {
+        setIsLoading(false);
+        router.push('/register?error=no-dhbw-email');
+        return;
+      }
       if (result?.error) {
         router.push(`/register?error=${result.error}`);
       }

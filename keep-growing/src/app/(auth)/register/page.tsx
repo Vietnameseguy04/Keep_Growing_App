@@ -39,7 +39,12 @@ export default async function RegisterPage({
         </div>
 
         {/* Fehleranzeige */}
-        {params.error && (
+        {params.error === 'no-dhbw-email' && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl text-center">
+            Bitte verwende deine DHBW-E-Mail-Adresse (@dhbw... oder @student.dhbw...).
+          </div>
+        )}
+        {params.error && params.error !== 'no-dhbw-email' && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl text-center">
             Es gab ein Problem bei der Registrierung.
           </div>
