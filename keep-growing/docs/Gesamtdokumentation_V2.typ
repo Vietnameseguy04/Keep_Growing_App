@@ -207,17 +207,6 @@ Wir arbeiteten als gleichberechtigtes Dreierteam. Die Schwerpunkte verteilten si
   [5], [Dez. 2026],  [Deployment-Verifikation, Bugfixes, Dokumentation, Präsentation], [✓ Done],
 )
 
-=== Zeitaufwand (geschätzt)
-
-#htable(
-  columns: (3.5cm, 2cm, 2cm, 2cm, 1fr),
-  hcell[Person], hcell[Analyse], hcell[Impl.], hcell[Doku], hcell[Gesamt],
-  [Anton], [8 h], [35 h], [10 h], [ca. 53 h],
-  [Johannes Appel], [15 h], [15 h], [18 h], [ca. 48 h],
-  [Nicolas], [10 h], [20 h], [15 h], [ca. 45 h],
-  [*Gesamt*], [*33 h*], [*70 h*], [*43 h*], [*ca. 146 h*],
-)
-
 == Agiles Vorgehen
 
 Wir orientierten uns an einem leichtgewichtigen Scrum-Prozess, angepasst an die Rahmenbedingungen eines Semesterprojekts:
@@ -569,15 +558,14 @@ Content-Disposition: attachment; filename="keep-growing-data.json"
 
 *Validierungslogik:*
 ```typescript
-if (!email.toLowerCase().match(/@(student\.)?dhbw/)) {
+if (!email.toLowerCase().match(/@(stud(ent)?\.)?dhbw/)) {
   return { error: 'no-dhbw-email' };
 }
 ```
 
 *Akzeptierte Adressen (Beispiele):*
+- `vorname.nachname-24\@stud.dhbw-ravensburg.de`
 - `vorname.nachname\@dhbw-ravensburg.de`
-- `s123456\@student.dhbw-stuttgart.de`
-- `mitarbeiter\@dhbw-mosbach.de`
 
 *Ablauf bei abgelehnter E-Mail:*
 + Server Action gibt `{ error: 'no-dhbw-email' }` zurück
