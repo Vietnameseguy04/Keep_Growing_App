@@ -1,12 +1,12 @@
 // ============================================================
 // KEEP GROWING – Gesamtdokumentation V2.0
-// Anton [Nachname], Johannes Appel, Nicolas [Nachname]
+// Anton Nguyen, Johannes Appel, Nicolas Biercher
 // DHBW Ravensburg | WGM 24 | Wintersemester 2026/27
 // ============================================================
 
 #set document(
   title: "Keep Growing – Gesamtdokumentation V2.0",
-  author: "Anton [Nachname], Johannes Appel, Nicolas [Nachname]",
+  author: "Anton Nguyen, Johannes Appel, Nicolas Biercher",
 )
 
 #set page(
@@ -109,7 +109,7 @@
         row-gutter: 0.75em,
         column-gutter: 0.4em,
         align(right, text(weight: "bold")[Projekt:]),       [Keep Growing – Web-App für DHBW-Pilot],
-        align(right, text(weight: "bold")[Neue Gruppe:]),   [Anton \[Nachname\], Johannes Appel, Nicolas \[Nachname\]],
+        align(right, text(weight: "bold")[Neue Gruppe:]),   [Anton Nguyen, Johannes Appel, Nicolas Biercher],
         align(right, text(weight: "bold")[Vorgänger:]),     [Florian Trapp, Elias Huber, Marlon Brunner (WGM 23)],
         align(right, text(weight: "bold")[Betreuung:]),     [Prof. Dr. Maren Müller],
         align(right, text(weight: "bold")[Studiengang:]),   [BWL – Gesundheitsmanagement (WGM 24)],
@@ -148,7 +148,7 @@
 
 Keep Growing ist eine Progressive Web App (PWA), die Nutzerinnen und Nutzer dabei unterstützt, mentales Wohlbefinden durch tägliches Tracking, Gamification und gezielte Trainingseinheiten zu fördern. Die App wurde im Sommersemester 2026 von Florian Trapp, Elias Huber und Marlon Brunner im Rahmen ihres Semesterprojekts an der DHBW Ravensburg entwickelt.
 
-Im Wintersemester 2026/27 übernahm unsere Gruppe (Anton \[Nachname\], Johannes Appel, Nicolas \[Nachname\], Studiengang WGM 24) das Projekt und erweiterte es gezielt um DSGVO-konforme Funktionen, Push-Benachrichtigungen, PWA-Fähigkeiten sowie automatisierte Tests.
+Im Wintersemester 2026/27 übernahm unsere Gruppe (Anton Nguyen, Johannes Appel, Nicolas Biercher, Studiengang WGM 24) das Projekt und erweiterte es gezielt um DSGVO-konforme Funktionen, Push-Benachrichtigungen, PWA-Fähigkeiten sowie automatisierte Tests.
 
 == Ziel dieser Dokumentation
 
@@ -188,9 +188,9 @@ Wir arbeiteten als gleichberechtigtes Dreierteam. Die Schwerpunkte verteilten si
 #htable(
   columns: (3.5cm, 1fr, 3.5cm),
   hcell[Person], hcell[Hauptverantwortlichkeit], hcell[Anteil],
-  [Anton \[Nachname\]], [Technische Implementierung: PWA, Web Push, Playwright-Tests, Repository-Management], [ca. 40 %],
+  [Anton Nguyen], [Technische Implementierung: PWA, Web Push, Playwright-Tests, Repository-Management], [ca. 40 %],
   [Johannes Appel], [Anforderungsanalyse, DSGVO-Konzept, Pflichtenheft V2.0, Qualitätssicherung], [ca. 30 %],
-  [Nicolas \[Nachname\]], [Datenbankschema, Deployment, DSGVO-Funktionen (Export/Löschen), Dokumentation], [ca. 30 %],
+  [Nicolas Biercher], [Datenbankschema, Deployment, DSGVO-Funktionen (Export/Löschen), Dokumentation], [ca. 30 %],
 )
 
 == Projektplanung und Meilensteine
@@ -914,7 +914,7 @@ Johannes verantwortete die Anforderungsanalyse und die Erstellung des aktualisie
 
 Wichtigste Erkenntnis: DSGVO-Konformität muss von Anfang an mitgedacht werden – nachträgliche Implementierung von Lösch- und Exportfunktionen ist aufwändiger als geplant.
 
-=== Nicolas \[Nachname\]
+=== Nicolas Biercher
 
 Nicolas war für das Datenbankschema und das Deployment verantwortlich. Er entwarf und implementierte die `push_subscriptions`-Tabelle inklusive Row Level Security Policy und erstellte das SQL-Migrationsskript. Außerdem implementierte er die DSGVO-Funktionen (Account-Löschfunktion und Datenexport-API-Route) und verifizierten das Vercel-Deployment nach jeder größeren Änderung.
 
@@ -998,7 +998,7 @@ Gegenüber der V1.0 wurde die Dokumentation strukturell beibehalten und inhaltli
 
 == Reflexion je Person
 
-=== Anton \[Nachname\]
+=== Anton Nguyen
 
 Das Projekt hat mir gezeigt, wie wichtig es ist, Abhängigkeiten (npm-Packages) vor dem Einsatz sorgfältig zu prüfen. Der Breaking Change in `web-push` v4.0.0 hat mich mehrere Stunden Debugging gekostet, wäre aber mit einem kurzen Blick ins Changelog vermeidbar gewesen. Positiv überrascht hat mich das Playwright-Framework: E2E-Tests schreiben sich deutlich schneller als gedacht und geben einem als Entwickler ein gutes Sicherheitsgefühl bei Refactorings.
 
@@ -1010,7 +1010,7 @@ Die Anforderungsanalyse war aufwändiger als erwartet, aber lohnend: Erst durch 
 
 *Was ich beim nächsten Mal anders mache:* Rechtliche Anforderungen früher klären – am besten vor der ersten Zeile Code.
 
-=== Nicolas \[Nachname\]
+=== Nicolas Biercher
 
 Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungewohnt, hat sich aber als sehr mächtiges Konzept erwiesen. Statt Zugriffsberechtigungen in der Anwendungslogik zu implementieren, werden sie direkt in der Datenbank durchgesetzt – das reduziert die Angriffsfläche erheblich. Das Deployment über Vercel war unkompliziert und die automatische Preview-URL pro Branch ein echter Produktivitätsgewinn.
 
@@ -1119,7 +1119,7 @@ Wir erklären hiermit, dass wir die vorliegende Dokumentation sowie die zugehör
   align(center)[
     #line(length: 100%, stroke: 0.5pt)
     #v(0.3em)
-    Anton \[Nachname\] \
+    Anton Nguyen \
     #text(size: 9pt, fill: muted)[Matrikelnr.: \[...\]] \
     #text(size: 9pt, fill: muted)[Datum: \_\_\_\_\_\_\_\_\_]
   ],
@@ -1133,7 +1133,7 @@ Wir erklären hiermit, dass wir die vorliegende Dokumentation sowie die zugehör
   align(center)[
     #line(length: 100%, stroke: 0.5pt)
     #v(0.3em)
-    Nicolas \[Nachname\] \
+    Nicolas Biercher \
     #text(size: 9pt, fill: muted)[Matrikelnr.: \[...\]] \
     #text(size: 9pt, fill: muted)[Datum: \_\_\_\_\_\_\_\_\_]
   ],
