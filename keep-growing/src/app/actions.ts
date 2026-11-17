@@ -33,7 +33,7 @@ export async function handleSignUp(formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string;
   const name = formData.get('name') as string;
 
-  if (!email.toLowerCase().match(/@(student\.)?dhbw/)) {
+  if (!email.toLowerCase().match(/@(stud(ent)?\.)?dhbw/)) {
     return { error: 'no-dhbw-email' };
   }
 
