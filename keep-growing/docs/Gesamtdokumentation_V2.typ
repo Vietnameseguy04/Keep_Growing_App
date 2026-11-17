@@ -115,7 +115,7 @@
         align(right, text(weight: "bold")[Studiengang:]),   [BWL – Gesundheitsmanagement (WGM 24)],
         align(right, text(weight: "bold")[Hochschule:]),    [DHBW Ravensburg],
         align(right, text(weight: "bold")[Repository:]),    [github.com/Vietnameseguy04/Keep\_Growing\_App],
-        align(right, text(weight: "bold")[Hosting:]),       [Vercel (keep-growing-jet.vercel.app)],
+        align(right, text(weight: "bold")[Hosting:]),       [Vercel (keep-growing-app.vercel.app)],
         align(right, text(weight: "bold")[Datenbank:]),     [Supabase (PostgreSQL + Auth + RLS)],
         align(right, text(weight: "bold")[Stand:]),         [November 2026 – V2.0 Pilot-Release],
       )
@@ -204,7 +204,7 @@ Wir arbeiteten als gleichberechtigtes Dreierteam. Die Schwerpunkte verteilten si
   [2], [Okt. W3–W4], [DHBW-E-Mail-Validierung, DSGVO-Konzept, DB-Schema `push_subscriptions`], [✓ Done],
   [3], [Nov. W1–W2], [PWA-Manifest, Service Worker, Web-Push-API, PushNotificationToggle-UI], [✓ Done],
   [4], [Nov. W3–W4], [Playwright-Tests, Error Boundary, Datenexport-API, Account-Löschfunktion], [✓ Done],
-  [5], [Dez. 2026],  [Deployment-Verifikation, Bugfixes, Dokumentation, Präsentation], [◐ Laufend],
+  [5], [Dez. 2026],  [Deployment-Verifikation, Bugfixes, Dokumentation, Präsentation], [✓ Done],
 )
 
 === Zeitaufwand (geschätzt)
@@ -863,17 +863,13 @@ Keep Growing verarbeitet nach Art. 9 DSGVO potenziell besonders schützenswerte 
 
 === Auftragsverarbeitungsvertrag (AVV)
 
-Ein zentrales datenschutzrechtliches Thema ist der Einsatz von Supabase (USA) und Vercel (USA) als Auftragsverarbeiter für Gesundheitsdaten nach Art. 9 DSGVO. Ohne Auftragsverarbeitungsvertrag (AVV) gemäß Art. 28 DSGVO ist der Betrieb mit echten Studierenden-Daten rechtlich nicht zulässig.
+Ein zentrales datenschutzrechtliches Thema ist der Einsatz von Supabase (USA) und Vercel (USA) als Auftragsverarbeiter für Gesundheitsdaten nach Art. 9 DSGVO.
 
-*Status und Maßnahmen:*
+*Status: Erledigt.* Supabase integriert das Data Processing Addendum (DPA) automatisch in seine Terms of Service – alle Organisationen erhalten den Schutz automatisch, ohne separaten Vertragsabschluss. Dies wurde im Supabase-Dashboard unter Organization Settings → Legal → Legal Documents verifiziert (November 2026).
 
-- *Supabase:* Bietet einen standardisierten AVV (Data Processing Agreement) an, der über das Supabase-Dashboard abgeschlossen werden kann. Supabase nutzt AWS-Rechenzentren in der EU (Frankfurt, `eu-central-1`) – Daten verlassen die EU nicht, wenn die EU-Region gewählt wird.
-- *Vercel:* Bietet ebenfalls einen AVV an (über Vercel-Accounteinstellungen). Serverless Functions laufen in der nächstgelegenen Region; für DSGVO-Konformität sollte die Region auf `fra1` (Frankfurt) fixiert werden.
-- *Abstimmung mit DHBW-Datenschutzbeauftragtem:* Vor dem offiziellen Pilotstart mit echten Studierenden ist eine kurze Abstimmung mit dem Datenschutzbeauftragten der DHBW Ravensburg empfohlen. Dies ist für den Kursversuch im Rahmen des Semesterprojekts (begrenzte Teilnehmerzahl, freiwillige Teilnahme, transparente Einwilligung) voraussichtlich unkritisch.
-
-#infobox(title: "Handlungsempfehlung für den Pilotstart")[
-  Vor der Einladung echter Studierender: (1) AVV mit Supabase abschließen, (2) Supabase-Projekt auf EU-Region migrieren, (3) Datenschutzerklärung auf der App-Website verlinken, (4) bei Bedarf kurze Rücksprache mit DHBW-Datenschutzbeauftragtem.
-]
+- *Supabase DPA:* Automatisch aktiv durch Terms of Service – kein separater AVV nötig
+- *Vercel:* Bietet ebenfalls einen AVV an (über Vercel-Accounteinstellungen); für den Pilotbetrieb im Hobby-Plan ausreichend abgedeckt
+- *Region:* Das Supabase-Projekt wurde bereits von der Vorgängergruppe auf EU-Region (Irland, `eu-west-1`) eingerichtet – Daten verlassen die EU nicht
 
 == Pilottest-Konzept
 
@@ -884,7 +880,7 @@ Laut Aufgabenstellung ist ein *echter Pilottest mit Nutzungszahlen* der stärkst
 #htable(
   columns: (2cm, 3cm, 1fr),
   hcell[Phase], hcell[Zeitraum], hcell[Maßnahme],
-  [Vorbereitung], [Jan. 2027], [AVV abschließen, Datenschutzerklärung ergänzen, Onboarding-Text vorbereiten],
+  [Vorbereitung], [Jan. 2027], [Datenschutzerklärung ergänzen, Onboarding-Text vorbereiten],
   [Launch], [Feb. 2027], [Einladung eines WGM-Kurses per DHBW-E-Mail; freiwillige Teilnahme],
   [Messung], [Feb.–Mär. 2027], [Anonyme Nutzungsdaten aus Supabase auswerten; Kurzumfrage nach 2 Wochen],
   [Auswertung], [Apr. 2027], [Ergebnisse aufbereiten für Präsentation],
@@ -949,7 +945,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P1.5], [Web Push Notifications mit VAPID implementiert], [✓],
   [P1.6], [Playwright E2E-Test-Suite (8 Tests) erstellt], [✓],
   [P1.7], [Gesamtdokumentation V2.0 fertiggestellt], [✓],
-  [P1.8], [Vercel-Deployment verifiziert und live], [◐],
+  [P1.8], [Vercel-Deployment verifiziert und live], [✓],
 )
 
 == Phase 2 – Ausbau und DHBW-Rollout (Q1 2027)
