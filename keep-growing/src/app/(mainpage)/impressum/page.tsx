@@ -41,7 +41,8 @@ export default function ImpressumPage() {
               <p className="pt-2">Represented by: Johanna Beckmann, Victoria Stein</p>
               <p>Email: kontakt@keepgrowing.app</p>
               <p>Phone: +49 176 12345678</p>
-              <p className="pt-2 italic text-xs">Developed by: Florian Trapp, Elias Huber, Marlon Brunner</p>
+              <p className="pt-2 italic text-xs">Originally developed by: Florian Trapp, Elias Huber, Marlon Brunner</p>
+              <p className="italic text-xs">Extended by: Anton Nguyen, Johannes Appel, Nicolas Biercher</p>
             </div>
           </section>
 
