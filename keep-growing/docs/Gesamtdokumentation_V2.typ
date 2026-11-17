@@ -1,7 +1,7 @@
 // ============================================================
 // KEEP GROWING – Gesamtdokumentation V2.0
 // Anton Nguyen, Johannes Appel, Nicolas Biercher
-// DHBW Ravensburg | WIBE224 | Wintersemester 2026/27
+// DHBW Ravensburg | WIBE24 | Wintersemester 2026/27
 // ============================================================
 
 #set document(
@@ -19,7 +19,7 @@
       grid(
         columns: (1fr, auto),
         align(left, text(size: 8pt, fill: rgb("#aaaaaa"))[Keep Growing – Gesamtdokumentation V2.0]),
-        align(right, text(size: 8pt, fill: rgb("#aaaaaa"))[WIBE224 | DHBW Ravensburg])
+        align(right, text(size: 8pt, fill: rgb("#aaaaaa"))[WIBE24 | DHBW Ravensburg])
       )
       v(-0.3em)
       line(length: 100%, stroke: 0.3pt + rgb("#dddddd"))
@@ -110,9 +110,9 @@
         column-gutter: 0.4em,
         align(right, text(weight: "bold")[Projekt:]),       [Keep Growing – Web-App für DHBW-Pilot],
         align(right, text(weight: "bold")[Neue Gruppe:]),   [Anton Nguyen, Johannes Appel, Nicolas Biercher],
-        align(right, text(weight: "bold")[Vorgänger:]),     [Florian Trapp, Elias Huber, Marlon Brunner (WIBE223)],
+        align(right, text(weight: "bold")[Vorgänger:]),     [Florian Trapp, Elias Huber, Marlon Brunner (WIBE23)],
         align(right, text(weight: "bold")[Betreuung:]),     [Prof. Dr. Maren Müller],
-        align(right, text(weight: "bold")[Studiengang:]),   [Wirtschaftsinformatik (WIBE224)],
+        align(right, text(weight: "bold")[Studiengang:]),   [Wirtschaftsinformatik (WIBE24)],
         align(right, text(weight: "bold")[Hochschule:]),    [DHBW Ravensburg],
         align(right, text(weight: "bold")[Repository:]),    [github.com/Vietnameseguy04/Keep\_Growing\_App],
         align(right, text(weight: "bold")[Hosting:]),       [Vercel (keep-growing-app.vercel.app)],
@@ -124,7 +124,7 @@
     #v(2.5cm)
     #text(size: 9pt, fill: rgb("#bbbbbb"))[
       Diese Dokumentation setzt die Gesamtdokumentation V1.0 von Florian Trapp, \
-      Elias Huber und Marlon Brunner (WIBE223, SS 2026) fort.
+      Elias Huber und Marlon Brunner (WIBE23, SS 2026) fort.
     ]
   ]
 ]
@@ -148,7 +148,7 @@
 
 Keep Growing ist eine Progressive Web App (PWA), die Nutzerinnen und Nutzer dabei unterstützt, mentales Wohlbefinden durch tägliches Tracking, Gamification und gezielte Trainingseinheiten zu fördern. Die App wurde im Sommersemester 2026 von Florian Trapp, Elias Huber und Marlon Brunner im Rahmen ihres Semesterprojekts an der DHBW Ravensburg entwickelt.
 
-Im Wintersemester 2026/27 übernahm unsere Gruppe (Anton Nguyen, Johannes Appel, Nicolas Biercher, Studiengang WIBE224) das Projekt und erweiterte es gezielt um DSGVO-konforme Funktionen, Push-Benachrichtigungen, PWA-Fähigkeiten sowie automatisierte Tests.
+Im Wintersemester 2026/27 übernahm unsere Gruppe (Anton Nguyen, Johannes Appel, Nicolas Biercher, Studiengang WIBE24) das Projekt und erweiterte es gezielt um DSGVO-konforme Funktionen, Push-Benachrichtigungen, PWA-Fähigkeiten sowie automatisierte Tests.
 
 == Ziel dieser Dokumentation
 
@@ -165,7 +165,7 @@ Diese Dokumentation konzentriert sich auf die *Erweiterungen der V2.0*. Grundleg
 
 == Ausgangslage und Aufgabenstellung
 
-Das Semesterprojekt der WIBE224 bestand in der Übernahme, Weiterentwicklung und Pilotierung der von WIBE223 entwickelten Keep-Growing-App. Die konkrete Aufgabenstellung umfasste drei Dimensionen:
+Das Semesterprojekt der WIBE24 bestand in der Übernahme, Weiterentwicklung und Pilotierung der von WIBE23 entwickelten Keep-Growing-App. Die konkrete Aufgabenstellung umfasste drei Dimensionen:
 
 + *Übernahme:* Einarbeitung in die bestehende Codebasis, Verständnis der Architektur und Identifikation von Erweiterungsbedarfen
 + *Weiterentwicklung:* Implementierung neuer Features entsprechend dem aktualisierten Lastenheft
@@ -280,7 +280,7 @@ Qualitätssicherung erfolgte auf drei Ebenen:
 
 Die Keep-Growing-App existiert seit SS 2026 als funktionsfähige Web-Anwendung. Sie erlaubt Nutzenden, tägliche Einträge zu Stimmung und Wohlbefinden zu erstellen, einen digitalen Blumengarten zu pflegen und kurze Mental-Health-Trainings durchzuführen. Die App wird auf Vercel gehostet und nutzt Supabase als Backend.
 
-Bei Übernahme durch WIBE224 fehlten jedoch wesentliche Funktionen für einen hochschulinternen Betrieb: Es gab keinen Zugangschutz auf DHBW-Angehörige, keine DSGVO-konformen Datenlösch- und Exportfunktionen, keine Push-Benachrichtigungen und keine installierbaren PWA-Fähigkeiten.
+Bei Übernahme durch WIBE24 fehlten jedoch wesentliche Funktionen für einen hochschulinternen Betrieb: Es gab keinen Zugangschutz auf DHBW-Angehörige, keine DSGVO-konformen Datenlösch- und Exportfunktionen, keine Push-Benachrichtigungen und keine installierbaren PWA-Fähigkeiten.
 
 == Zielbestimmung
 
@@ -927,7 +927,7 @@ Wichtigste Erkenntnis: `ON DELETE CASCADE` in PostgreSQL ist ein mächtiges Werk
 
 == Strategische Ausrichtung
 
-Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese Ausrichtung wurde im Rahmen der Übergabe an WIBE224 verworfen. Die neue Strategie fokussiert auf drei Säulen:
+Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese Ausrichtung wurde im Rahmen der Übergabe an WIBE24 verworfen. Die neue Strategie fokussiert auf drei Säulen:
 
 + *Datenschutzkonformität* als nicht verhandelbare Grundvoraussetzung für den Hochschulbetrieb
 + *Niedrige Betriebskosten* (Serverless auf Vercel, Supabase Free Tier: 0 \$/Monat)
@@ -960,7 +960,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P2.5], [Admin-Dashboard für Studiengangsleitung (anonymisierte Nutzungsstatistiken)], [NIEDRIG],
 )
 
-== Phase 3 – Evaluation und Übergabe an WIBE225 (Q2–Q3 2027)
+== Phase 3 – Evaluation und Übergabe an WIBE25 (Q2–Q3 2027)
 
 #htable(
   columns: (auto, 1fr),
@@ -968,7 +968,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P3.1], [Nutzerbefragung: System Usability Scale (SUS) und Net Promoter Score (NPS) erheben],
   [P3.2], [Auswertung: Welche Features werden am häufigsten genutzt? (Supabase Analytics)],
   [P3.3], [Abschlussbericht mit Empfehlungen für die nächste Gruppe],
-  [P3.4], [Übergabe-Meeting mit WIBE225 (analog zu unserer eigenen Übergabe)],
+  [P3.4], [Übergabe-Meeting mit WIBE25 (analog zu unserer eigenen Übergabe)],
   [P3.5], [Repository-Archivierung als öffentliches Open-Source-Referenzprojekt],
 )
 
@@ -1018,7 +1018,7 @@ Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungew
 
 == Ausblick
 
-Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe (WIBE225) kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
+Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe (WIBE25) kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
 
 // ============================================================
 // ANHÄNGE
