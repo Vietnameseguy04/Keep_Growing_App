@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { setVapidDetails, sendNotification } from 'web-push';
 import { createClient } from '@/lib/supabase/server';
 
-setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+function initVapid() {
+  setVapidDetails(
+    process.env.VAPID_EMAIL!,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  );
+}
 
 // Subscription speichern
 export async function POST(req: NextRequest) {
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
 
 // Test-Notification senden
 export async function GET() {
+  initVapid();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
