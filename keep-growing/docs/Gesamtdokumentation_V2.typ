@@ -110,7 +110,7 @@
         column-gutter: 0.4em,
         align(right, text(weight: "bold")[Projekt:]),       [Keep Growing – Web-App für DHBW-Pilot],
         align(right, text(weight: "bold")[Neue Gruppe:]),   [Anton Nguyen, Johannes Appel, Nicolas Biercher],
-        align(right, text(weight: "bold")[Vorgänger:]),     [Florian Trapp, Elias Huber, Marlon Brunner (WIBE23)],
+        align(right, text(weight: "bold")[Vorgänger:]),     [Florian Trapp, Elias Huber, Marlon Brunner],
         align(right, text(weight: "bold")[Betreuung:]),     [Prof. Dr. Maren Müller],
         align(right, text(weight: "bold")[Studiengang:]),   [Wirtschaftsinformatik (WIBE24)],
         align(right, text(weight: "bold")[Hochschule:]),    [DHBW Ravensburg],
@@ -124,7 +124,7 @@
     #v(2.5cm)
     #text(size: 9pt, fill: rgb("#bbbbbb"))[
       Diese Dokumentation setzt die Gesamtdokumentation V1.0 von Florian Trapp, \
-      Elias Huber und Marlon Brunner (WIBE23, SS 2026) fort.
+      Elias Huber und Marlon Brunner (SS 2026) fort.
     ]
   ]
 ]
@@ -165,7 +165,7 @@ Diese Dokumentation konzentriert sich auf die *Erweiterungen der V2.0*. Grundleg
 
 == Ausgangslage und Aufgabenstellung
 
-Das Semesterprojekt der WIBE24 bestand in der Übernahme, Weiterentwicklung und Pilotierung der von WIBE23 entwickelten Keep-Growing-App. Die konkrete Aufgabenstellung umfasste drei Dimensionen:
+Das Semesterprojekt der WIBE24 bestand in der Übernahme, Weiterentwicklung und Pilotierung der von der Vorgängergruppe entwickelten Keep-Growing-App. Die konkrete Aufgabenstellung umfasste drei Dimensionen:
 
 + *Übernahme:* Einarbeitung in die bestehende Codebasis, Verständnis der Architektur und Identifikation von Erweiterungsbedarfen
 + *Weiterentwicklung:* Implementierung neuer Features entsprechend dem aktualisierten Lastenheft
@@ -960,7 +960,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P2.5], [Admin-Dashboard für Studiengangsleitung (anonymisierte Nutzungsstatistiken)], [NIEDRIG],
 )
 
-== Phase 3 – Evaluation und Übergabe an WIBE25 (Q2–Q3 2027)
+== Phase 3 – Evaluation und Übergabe an Nachfolgegruppe (Q2–Q3 2027)
 
 #htable(
   columns: (auto, 1fr),
@@ -968,7 +968,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P3.1], [Nutzerbefragung: System Usability Scale (SUS) und Net Promoter Score (NPS) erheben],
   [P3.2], [Auswertung: Welche Features werden am häufigsten genutzt? (Supabase Analytics)],
   [P3.3], [Abschlussbericht mit Empfehlungen für die nächste Gruppe],
-  [P3.4], [Übergabe-Meeting mit WIBE25 (analog zu unserer eigenen Übergabe)],
+  [P3.4], [Übergabe-Meeting (analog zu unserer eigenen Übergabe)],
   [P3.5], [Repository-Archivierung als öffentliches Open-Source-Referenzprojekt],
 )
 
@@ -1018,7 +1018,7 @@ Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungew
 
 == Ausblick
 
-Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe (WIBE25) kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
+Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
 
 // ============================================================
 // ANHÄNGE
