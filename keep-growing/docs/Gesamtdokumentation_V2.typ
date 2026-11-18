@@ -885,17 +885,12 @@ Das Dashboard berechnet aus den `daily_entries` der letzten Tage eine SVG-Linien
   [Error Boundary], [✓ SOLL], [✓ Implementiert],
   [Playwright E2E-Tests (mind. 8)], [✓ SOLL], [✓ 8 Tests vorhanden],
   [Freunde-System (Anfragen, Garten, Likes, Notifications)], [✓ SOLL], [✓ Implementiert],
-  [Automatischer täglicher Cron-Push], [✓ KANN], [○ Nicht implementiert],
+  [Automatischer täglicher Cron-Push], [✓ KANN], [✓ Implementiert (täglich 8:00 Uhr)],
 )
 
 === Abweichungen und Begründungen
 
-Der automatische tägliche Cron-Push (alle Nutzer täglich um 19:00 Uhr benachrichtigen) wurde bewusst nicht implementiert. Gründe:
-- Vercel Cron Jobs erfordern den Pro-Plan (20 \$/Monat)
-- Push-Notifications können nur gesendet werden, wenn eine Subscription vorliegt – eine zentrale Liste aller aktiven Subscriptions wäre nötig
-- Datenschutzrechtlich kritisch: Massenversand von Push-Notifications erfordert gesonderte Einwilligung
-
-Als Alternative wurde die manuelle Test-Notification via `GET /api/push` implementiert. Ein späterer Cron-Job ist als Phase-2-Aufgabe in der Roadmap dokumentiert.
+Der automatische tägliche Cron-Push wurde implementiert: Jeden Morgen um 8:00 Uhr (CET) sendet ein Vercel Cron Job über `/api/cron/push` eine Push-Notification an alle Nutzer mit aktiver Subscription. Der Endpoint ist via `CRON_SECRET` (Bearer-Token) gesichert und nutzt den Supabase Service Role Key, um alle aktiven Subscriptions ohne User-Auth abrufen zu können.
 
 == Aufgetretene Herausforderungen und Lösungen
 
@@ -1071,11 +1066,10 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
 #htable(
   columns: (auto, 1fr, 2.5cm),
   hcell[ID], hcell[Feature / Aufgabe], hcell[Priorität],
-  [P2.1], [Automatischer täglicher Cron-Push (Vercel Cron Jobs, täglich 19:00 Uhr)], [HOCH],
-  [P2.2], [Onboarding-Flow: Intro-Slides bei erstem Login], [MITTEL],
-  [P2.3], [Offline-Fallback-Seite im Service Worker], [MITTEL],
-  [P2.4], [PWA-Icon-Set in verschiedenen Größen (192×192, 512×512, maskable)], [NIEDRIG],
-  [P2.5], [Admin-Dashboard für Studiengangsleitung (anonymisierte Nutzungsstatistiken)], [NIEDRIG],
+  [P2.1], [Onboarding-Flow: Intro-Slides bei erstem Login], [MITTEL],
+  [P2.2], [Offline-Fallback-Seite im Service Worker], [MITTEL],
+  [P2.3], [PWA-Icon-Set in verschiedenen Größen (192×192, 512×512, maskable)], [NIEDRIG],
+  [P2.4], [Admin-Dashboard für Studiengangsleitung (anonymisierte Nutzungsstatistiken)], [NIEDRIG],
 )
 
 == Phase 3 – Evaluation und Übergabe an Nachfolgegruppe (Mai–Jun. 2027)
@@ -1096,7 +1090,6 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   columns: (3cm, 1fr, 2cm),
   hcell[Risiko], hcell[Beschreibung / Auswirkung], hcell[Schwere],
   [Supabase Free Tier], [500 MB DB, 50.000 MAU – bei vollständigem DHBW-Rollout Upgrade nötig (25 \$/Monat)], [MITTEL],
-  [Kein Cron-Push], [Reminders nur per manuellem Trigger – Nutzungskontinuität leidet], [HOCH],
   [Kein Error-Monitoring], [Produktionsfehler werden nicht aktiv gemeldet (kein Sentry o.Ä.)], [MITTEL],
   [Push auf iOS < 16.4], [Web Push auf älteren iPhones nicht unterstützt – Reminders nicht verfügbar], [NIEDRIG],
   [VAPID-Key-Verlust], [Bei Key-Verlust müssen alle Subscriptions neu eingeholt werden], [MITTEL],
@@ -1136,7 +1129,7 @@ Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungew
 
 == Ausblick
 
-Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
+Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte.
 
 // ============================================================
 // QUELLENVERZEICHNIS
