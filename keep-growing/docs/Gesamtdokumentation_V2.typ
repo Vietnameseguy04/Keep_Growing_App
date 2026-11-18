@@ -122,6 +122,10 @@
     ]
 
     #v(2.5cm)
+    #align(center)[
+      #image("Yoga_Frau.jpg", width: 6cm)
+    ]
+    #v(0.5cm)
     #text(size: 9pt, fill: rgb("#bbbbbb"))[
       Diese Dokumentation setzt die Gesamtdokumentation V1.0 von Florian Trapp, \
       Elias Huber und Marlon Brunner (SS 2026) fort.
