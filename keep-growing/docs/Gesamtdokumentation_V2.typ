@@ -84,8 +84,10 @@
 
 // ── TITELSEITE ───────────────────────────────────────────────
 #page(numbering: none, header: none)[
-  #v(2cm)
+  #v(1cm)
   #align(center)[
+    #image("Yoga_Frau.jpg", width: 5cm)
+    #v(0.5cm)
     #block(fill: primary, width: 12cm, height: 4pt, radius: 2pt)
     #v(0.6cm)
     #text(size: 42pt, weight: "bold", fill: primary, tracking: 3pt)[KEEP GROWING]
@@ -122,10 +124,6 @@
     ]
 
     #v(2.5cm)
-    #align(center)[
-      #image("Yoga_Frau.jpg", width: 6cm)
-    ]
-    #v(0.5cm)
     #text(size: 9pt, fill: rgb("#bbbbbb"))[
       Diese Dokumentation setzt die Gesamtdokumentation V1.0 von Florian Trapp, \
       Elias Huber und Marlon Brunner (SS 2026) fort.
