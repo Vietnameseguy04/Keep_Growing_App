@@ -119,7 +119,7 @@
         align(right, text(weight: "bold")[Repository:]),    [github.com/Vietnameseguy04/Keep\_Growing\_App],
         align(right, text(weight: "bold")[Hosting:]),       [Vercel (keep-growing-app.vercel.app)],
         align(right, text(weight: "bold")[Datenbank:]),     [Supabase (PostgreSQL + Auth + RLS)],
-        align(right, text(weight: "bold")[Stand:]),         [November 2026 – V2.0 Pilot-Release],
+        align(right, text(weight: "bold")[Stand:]),         [November 2026 – April 2027],
       )
     ]
 
@@ -203,11 +203,11 @@ Wir arbeiteten als gleichberechtigtes Dreierteam. Die Schwerpunkte verteilten si
 #htable(
   columns: (2cm, 3cm, 1fr, 2cm),
   hcell[Sprint], hcell[Zeitraum], hcell[Inhalte], hcell[Status],
-  [1], [Okt. W1–W2], [Einarbeitung, Repository-Fork, lokale Dev-Umgebung, Gap-Analyse], [✓ Done],
-  [2], [Okt. W3–W4], [DHBW-E-Mail-Validierung, DSGVO-Konzept, DB-Schema `push_subscriptions`], [✓ Done],
-  [3], [Nov. W1–W2], [PWA-Manifest, Service Worker, Web-Push-API, PushNotificationToggle-UI], [✓ Done],
-  [4], [Nov. W3–W4], [Playwright-Tests, Error Boundary, Datenexport-API, Account-Löschfunktion], [✓ Done],
-  [5], [Dez. 2026],  [Deployment-Verifikation, Bugfixes, Dokumentation, Präsentation], [✓ Done],
+  [1], [Nov. W1–W2],     [Einarbeitung, Repository-Fork, lokale Dev-Umgebung, Gap-Analyse], [✓ Done],
+  [2], [Nov. W3–W4],     [DHBW-E-Mail-Validierung, DSGVO-Konzept, DB-Schema `push_subscriptions`], [✓ Done],
+  [3], [Dez. W1–W2],     [PWA-Manifest, Service Worker, Web-Push-API, PushNotificationToggle-UI], [✓ Done],
+  [4], [Jan. 2027],      [Playwright-Tests, Error Boundary, Datenexport-API, Account-Löschfunktion], [✓ Done],
+  [5], [Feb.–Mär. 2027], [Deployment-Verifikation, Bugfixes, Dokumentation, Präsentation], [✓ Done],
 )
 
 == Agiles Vorgehen
@@ -512,7 +512,7 @@ CREATE POLICY "Users manage own subscription"
   "account": {
     "email": "vorname.nachname-24\@stud.dhbw-ravensburg.de",
     "name": "Max Mustermann",
-    "created_at": "2026-10-01T10:00:00Z"
+    "created_at": "2026-11-01T10:00:00Z"
   },
   "daily_entries": [...],
   "flowers": [...],
@@ -875,7 +875,7 @@ Das Dashboard berechnet aus den `daily_entries` der letzten Tage eine SVG-Linien
 
 #htable(
   columns: (1fr, 2cm, 2cm),
-  hcell[Feature], hcell[Soll (V2.0)], hcell[Ist (Stand Nov. 2026)],
+  hcell[Feature], hcell[Soll (V2.0)], hcell[Ist (Stand Apr. 2027)],
   [DHBW-E-Mail-Validierung], [✓ MUSS], [✓ Implementiert],
   [Account-Löschung (DSGVO Art. 17)], [✓ MUSS], [✓ Implementiert],
   [Datenexport (DSGVO Art. 20)], [✓ MUSS], [✓ Implementiert],
@@ -996,10 +996,10 @@ Laut Aufgabenstellung ist ein *echter Pilottest mit Nutzungszahlen* der stärkst
 #htable(
   columns: (2cm, 3cm, 1fr),
   hcell[Phase], hcell[Zeitraum], hcell[Maßnahme],
-  [Vorbereitung], [Jan. 2027], [Datenschutzerklärung ergänzen, Onboarding-Text vorbereiten],
-  [Launch], [Feb. 2027], [Einladung eines Kurses per DHBW-E-Mail; freiwillige Teilnahme],
-  [Messung], [Feb.–Mär. 2027], [Anonyme Nutzungsdaten aus Supabase auswerten; Kurzumfrage nach 2 Wochen],
-  [Auswertung], [Apr. 2027], [Ergebnisse aufbereiten für Präsentation],
+  [Vorbereitung], [Feb. 2027],      [Datenschutzerklärung ergänzen, Onboarding-Text vorbereiten],
+  [Launch],       [Mär. 2027],      [Einladung eines Kurses per DHBW-E-Mail; freiwillige Teilnahme],
+  [Messung],      [Mär.–Apr. 2027], [Anonyme Nutzungsdaten aus Supabase auswerten; Kurzumfrage nach 2 Wochen],
+  [Auswertung],   [Apr. 2027],      [Ergebnisse aufbereiten für Präsentation],
 )
 
 === Zu erhebende Kennzahlen
@@ -1051,7 +1051,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
 + *Niedrige Betriebskosten* (Serverless auf Vercel, Supabase Free Tier: 0 \$/Monat)
 + *Übergabefähigkeit* als Forschungs- und Lehrobjekt für zukünftige Kurse
 
-== Phase 1 – Pilot-Release (Q4 2026, abgeschlossen)
+== Phase 1 – Pilot-Release (Nov. 2026 – Mär. 2027, abgeschlossen)
 
 #htable(
   columns: (auto, 1fr, auto),
@@ -1066,7 +1066,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P1.8], [Vercel-Deployment verifiziert und live], [✓],
 )
 
-== Phase 2 – Ausbau und DHBW-Rollout (Q1 2027)
+== Phase 2 – Ausbau und DHBW-Rollout (Apr. 2027)
 
 #htable(
   columns: (auto, 1fr, 2.5cm),
@@ -1078,7 +1078,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   [P2.5], [Admin-Dashboard für Studiengangsleitung (anonymisierte Nutzungsstatistiken)], [NIEDRIG],
 )
 
-== Phase 3 – Evaluation und Übergabe an Nachfolgegruppe (Q2–Q3 2027)
+== Phase 3 – Evaluation und Übergabe an Nachfolgegruppe (Mai–Jun. 2027)
 
 #htable(
   columns: (auto, 1fr),
