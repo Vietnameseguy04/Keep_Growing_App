@@ -177,7 +177,8 @@ Die Übergabe vom Vorgängerkurs erfolgte zu Beginn des Wintersemesters 2026/27.
 - Zugang zum Original-Repository (github.com/Florian565/Keep_Growing)
 - Zugang zur Supabase-Projektinstanz
 - Gesamtdokumentation V1.0 (44 Seiten)
-- Vercel-Deployment-Konfiguration
+
+Das Vercel-Deployment wurde von WIBE24 neu eingerichtet, da der Vorgänger-Account nicht übertragen werden konnte. Das neue Deployment läuft unter keep-growing-app.vercel.app im eigenen Vercel-Account.
 
 Nach der Übergabe fork-ten wir das Repository in unser eigenes GitHub-Konto (Vietnameseguy04/Keep_Growing_App) und richteten eine eigenständige Entwicklungsumgebung ein.
 
@@ -325,7 +326,7 @@ Das ursprüngliche Lastenheft der Vorgängergruppe definierte als Zielgruppe „
 #htable(
   columns: (3cm, 1fr, 2.5cm),
   hcell[Zielgruppe], hcell[Beschreibung], hcell[Priorität],
-  [DHBW-Studierende], [Hauptzielgruppe: alle Studierenden mit DHBW-E-Mail; primär WGM-Studierende im Pilot], [HOCH],
+  [DHBW-Studierende], [Hauptzielgruppe: alle Studierenden mit DHBW-E-Mail; primär WIBE24-Studierende im Pilot], [HOCH],
   [DHBW-Lehrende], [Sekundäre Zielgruppe: Nutzung als Selbstfürsorge-Tool], [MITTEL],
   [Studiengangsleitung], [Indirekte Stakeholder: Interesse an aggregierten, anonymisierten Nutzungsdaten], [NIEDRIG],
 )
@@ -508,7 +509,7 @@ CREATE POLICY "Users manage own subscription"
 ```json
 {
   "account": {
-    "email": "vorname\@student.dhbw-stuttgart.de",
+    "email": "vorname.nachname-24\@stud.dhbw-ravensburg.de",
     "name": "Max Mustermann",
     "created_at": "2026-10-01T10:00:00Z"
   },
@@ -570,7 +571,7 @@ if (!email.toLowerCase().match(/@(stud(ent)?\.)?dhbw/)) {
 *Ablauf bei abgelehnter E-Mail:*
 + Server Action gibt `{ error: 'no-dhbw-email' }` zurück
 + Client-Komponente leitet zu `/register?error=no-dhbw-email` weiter
-+ Registrierungsseite zeigt: „Bitte verwende deine DHBW-E-Mail-Adresse (\@dhbw... oder \@student.dhbw...)."
++ Registrierungsseite zeigt: „Bitte verwende deine DHBW-E-Mail-Adresse (\@dhbw... oder \@stud.dhbw...)."
 
 *Betroffene Dateien:*
 - `src/app/actions.ts` – Validierungslogik
@@ -820,7 +821,7 @@ npm run dev
 
 *Ursache:* Supabase prüft beim Signup, ob die Domain real existiert (MX-Record-Lookup). `student.dhbw-stuttgart.de` als Subdomain hat in der Regel keine eigenen MX-Records.
 
-*Schlussfolgerung:* Kein Bug in unserer DHBW-Validierung. Für vollständige Tests wird eine echte DHBW-Studierenden-E-Mail benötigt.
+*Schlussfolgerung:* E-Mail-Adressen der Form `vorname\@student.dhbw-*.de` (Subdomain ohne eigene MX-Records) werden von Supabase Auth abgelehnt. Das Format `vorname.nachname-24\@stud.dhbw-ravensburg.de` (direkter Subdomain-Eintrag mit MX-Records) funktioniert korrekt – bestätigt mit echter DHBW-Studierenden-E-Mail.
 
 ---
 
@@ -851,7 +852,7 @@ Keep Growing verarbeitet nach Art. 9 DSGVO potenziell besonders schützenswerte 
 
 === Auftragsverarbeitungsvertrag (AVV)
 
-Ein zentrales datenschutzrechtliches Thema ist der Einsatz von Supabase (USA) und Vercel (USA) als Auftragsverarbeiter für Gesundheitsdaten nach Art. 9 DSGVO.
+Ein zentrales datenschutzrechtliches Thema ist der Einsatz von Supabase (EU/Irland, `eu-west-1`) und Vercel (USA) als Auftragsverarbeiter für Gesundheitsdaten nach Art. 9 DSGVO.
 
 *Status: Erledigt.* Supabase integriert das Data Processing Addendum (DPA) automatisch in seine Terms of Service – alle Organisationen erhalten den Schutz automatisch, ohne separaten Vertragsabschluss. Dies wurde im Supabase-Dashboard unter Organization Settings → Legal → Legal Documents verifiziert (November 2026).
 
@@ -869,7 +870,7 @@ Laut Aufgabenstellung ist ein *echter Pilottest mit Nutzungszahlen* der stärkst
   columns: (2cm, 3cm, 1fr),
   hcell[Phase], hcell[Zeitraum], hcell[Maßnahme],
   [Vorbereitung], [Jan. 2027], [Datenschutzerklärung ergänzen, Onboarding-Text vorbereiten],
-  [Launch], [Feb. 2027], [Einladung eines WGM-Kurses per DHBW-E-Mail; freiwillige Teilnahme],
+  [Launch], [Feb. 2027], [Einladung eines Kurses per DHBW-E-Mail; freiwillige Teilnahme],
   [Messung], [Feb.–Mär. 2027], [Anonyme Nutzungsdaten aus Supabase auswerten; Kurzumfrage nach 2 Wochen],
   [Auswertung], [Apr. 2027], [Ergebnisse aufbereiten für Präsentation],
 )
@@ -891,6 +892,8 @@ Laut Aufgabenstellung ist ein *echter Pilottest mit Nutzungszahlen* der stärkst
 ]
 
 == Individuelle Beiträge
+
+=== Anton Nguyen
 
 Anton übernahm die technische Hauptimplementierung des Projekts. Schwerpunkte waren das PWA-Setup (Manifest, Service Worker, ServiceWorkerRegistrar-Komponente), die komplette Web-Push-Infrastruktur mit VAPID-Schlüsselverwaltung sowie die Playwright-E2E-Test-Suite. Darüber hinaus managte Anton das GitHub-Repository, erstellte alle Pull Requests und führte den initialen Fork vom Vorgänger-Repository durch.
 
@@ -919,7 +922,7 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
 
 + *Datenschutzkonformität* als nicht verhandelbare Grundvoraussetzung für den Hochschulbetrieb
 + *Niedrige Betriebskosten* (Serverless auf Vercel, Supabase Free Tier: 0 \$/Monat)
-+ *Übergabefähigkeit* als Forschungs- und Lehrobjekt für zukünftige WGM-Kurse
++ *Übergabefähigkeit* als Forschungs- und Lehrobjekt für zukünftige Kurse
 
 == Phase 1 – Pilot-Release (Q4 2026, abgeschlossen)
 
