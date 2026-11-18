@@ -227,18 +227,6 @@ Als Backlog-Tool nutzten wir *GitHub Issues und Projects*. Jedes Feature wurde a
 
 Branches folgten dem Schema `feature/<kurzname>` bzw. `fix/<kurzname>`. Merges in `main` erfolgten ausschließlich per Pull Request mit mindestens einem Review durch ein anderes Teammitglied.
 
-== Abstimmungstermine mit Prof. Dr. Müller
-
-In Anlehnung an die Vorgängergruppe führten wir drei strukturierte Abstimmungstermine mit unserer Betreuerin durch:
-
-#htable(
-  columns: (2.5cm, 2.5cm, 1fr),
-  hcell[Termin], hcell[Zeitpunkt], hcell[Inhalt],
-  [Kick-off], [Oktober 2026], [Projektübergabe, Erwartungsklärung, Zieldefinition für V2.0; Klärung Zielgruppe und Pilotrahmen],
-  [Zwischenfeedback], [November 2026], [Vorstellung implementierter Features (DHBW-Zugang, DSGVO, PWA), Feedback zu Roadmap und Pilot-Planung],
-  [Abnahme], [Dezember 2026], [Abschluss-Demo, Freigabe für Pilotbetrieb, Vorbesprechung Präsentation],
-)
-
 == Qualitätssicherung
 
 Qualitätssicherung erfolgte auf drei Ebenen:
