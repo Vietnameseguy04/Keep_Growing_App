@@ -15,7 +15,7 @@ test.describe('Authentifizierung', () => {
     await page.goto('/register');
     await page.getByPlaceholder('Name').fill('Test User');
     await page.getByPlaceholder('Email').fill('test@gmail.com');
-    await page.getByPlaceholder('Password').fill('password123');
+    await page.getByPlaceholder('Password').first().fill('password123');
     await page.getByPlaceholder('Confirm Password').fill('password123');
     await page.getByRole('button', { name: 'Sign up' }).click();
     await expect(page.getByText('DHBW-E-Mail-Adresse')).toBeVisible();
@@ -31,7 +31,7 @@ test.describe('Authentifizierung', () => {
     await page.goto('/login');
     await page.getByPlaceholder('Email').fill('falsch@student.dhbw.de');
     await page.getByPlaceholder('Password').fill('wrongpassword');
-    await page.getByRole('button', { name: /log in/i }).click();
+    await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL(/error=true/);
   });
 });
@@ -41,7 +41,7 @@ test.describe('Dashboard (eingeloggt)', () => {
     await page.goto('/login');
     await page.getByPlaceholder('Email').fill(TEST_EMAIL);
     await page.getByPlaceholder('Password').fill(TEST_PASSWORD);
-    await page.getByRole('button', { name: /log in/i }).click();
+    await page.getByRole('button', { name: 'Login' }).click();
     await page.waitForURL('**/dashboard');
   });
 

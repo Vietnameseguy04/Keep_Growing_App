@@ -1,4 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
+import { existsSync, readFileSync } from 'fs';
+
+// TEST_EMAIL / TEST_PASSWORD aus .env.local laden (Playwright lädt .env.local nicht automatisch)
+if (existsSync('.env.local')) {
+  readFileSync('.env.local', 'utf-8').split('\n').forEach(line => {
+    const m = line.match(/^(TEST_\w+)=(.+)$/);
+    if (m) process.env[m[1]] = m[2].trim();
+  });
+}
 
 export default defineConfig({
   testDir: './tests',

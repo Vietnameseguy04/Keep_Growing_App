@@ -212,7 +212,7 @@ Wir arbeiteten als gleichberechtigtes Dreierteam. Die Schwerpunkte verteilten si
 
 == Agiles Vorgehen
 
-Wir orientierten uns an einem leichtgewichtigen Scrum-Prozess, angepasst an die Rahmenbedingungen eines Semesterprojekts:
+Wir orientierten uns an einem leichtgewichtigen Scrum-Prozess #super[[2]], angepasst an die Rahmenbedingungen eines Semesterprojekts:
 
 === Meetings und Kommunikation
 
@@ -226,6 +226,12 @@ Wir orientierten uns an einem leichtgewichtigen Scrum-Prozess, angepasst an die 
 Als Backlog-Tool nutzten wir *GitHub Issues und Projects*. Jedes Feature wurde als Issue angelegt, mit einem Label (Feature / Bug / Doku), einer zuständigen Person und einem Meilenstein versehen.
 
 Branches folgten dem Schema `feature/<kurzname>` bzw. `fix/<kurzname>`. Merges in `main` erfolgten ausschließlich per Pull Request mit mindestens einem Review durch ein anderes Teammitglied.
+
+=== Zusammenarbeit im Team
+
+Die Zusammenarbeit war durch die räumliche Nähe im Studiengang begünstigt: Kurzabstimmungen erfolgten oft spontan zwischen Vorlesungen, während offizielle Sprint-Meetings per Discord stattfanden. Wir entschieden uns bewusst für einen schlanken Prozess ohne aufwendige Planungsrituale – kein schriftliches Burndown-Chart, kein formales Sprint-Backlog-Refinement. Das hat gut funktioniert, weil der Projektumfang überschaubar und die Aufgabenverteilung von Beginn an klar war.
+
+Herausfordernd war die Einarbeitung in eine fremde Codebasis: In Sprint 1 verbrachten wir mehr Zeit als geplant damit, die V1.0-Architektur zu verstehen, bevor wir anfangen konnten, Funktionen hinzuzufügen. Rückblickend hätte eine gemeinsame Code-Walkthrough-Session mit der Vorgängergruppe viel Zeit gespart – die Übergabe beschränkte sich auf eine Dokumentübergabe ohne direkten Wissenstransfer. Diese Erfahrung ist der Hauptgrund, warum wir in Phase 3 ein explizites Übergabe-Meeting mit der nächsten Gruppe vorsehen (vgl. P3.4).
 
 == Qualitätssicherung
 
@@ -296,7 +302,7 @@ Die folgenden Ziele sind für den DHBW-Pilot unverzichtbar:
   [A01], [Die App wird *nicht* kommerziell betrieben – keine Bezahl- oder Premium-Funktionen],
   [A02], [Es wird *kein* nativer iOS- oder Android-App-Store-Eintrag angestrebt],
   [A03], [Eine Mehrsprachigkeit über Deutsch/Englisch hinaus ist *nicht* vorgesehen],
-  [A04], [Social-Media-Sharing oder Community-Features sind *nicht* Teil des Piloten],
+  [A04], [Eine vollständige Social-Media-Plattform (öffentliche Profile, Feeds, Follower) ist *nicht* vorgesehen; das Freunde-System beschränkt sich auf DHBW-interne Nutzende],
 )
 
 == Produkteinsatz
@@ -375,6 +381,7 @@ Eine zentrale Entscheidung war die Wahl der Bereitstellungsform. Drei Optionen w
   [PF13], [Push-Reminder: tägliche Benachrichtigung aktivieren/deaktivieren], [#sollpill],
   [PF14], [Error Boundary: Fehler in Unterseiten isoliert abfangen], [#sollpill],
   [PF15], [Playwright-E2E-Tests für zentrale User Journeys], [#sollpill],
+  [PF16], [Freunde-System: Freundschaftsanfragen, Gärten anderer Nutzender ansehen, Garten liken, Benachrichtigungen (Realtime)], [#sollpill],
 )
 
 == Produktdaten
@@ -450,10 +457,14 @@ Keep Growing folgt einer klassischen Dreischichten-Architektur, vollständig als
   columns: (3.5cm, 1fr, 2cm),
   hcell[Tabelle], hcell[Felder], hcell[Neu in V2],
   [`daily_entries`], [`id`, `user_id` (FK), `created_at` (Datum), `score` (1–10), `note` (Text)], [Nein],
-  [`flowers`], [`id`, `user_id` (FK), `created_at`, `type`, `position_x`, `position_y`], [Nein],
+  [`flower_garden`], [`id`, `user_id` (FK), `created_at`, `type`, `position_x`, `position_y`], [Nein],
   [`garden_settings`], [`id`, `user_id` (FK), `last_reset_at`], [Nein],
   [`notes`], [`id`, `user_id` (FK), `created_at`, `content`], [Nein],
   [`push_subscriptions`], [`user_id` (PK + FK), `subscription` (JSON-Text), `created_at`], [*Ja*],
+  [`profiles`], [`id` (PK + FK → auth.users), `full_name`, `email`, `created_at`], [*Ja*],
+  [`friendships`], [`id`, `requester_id` (FK), `addressee_id` (FK), `status` (pending/accepted), `created_at`], [*Ja*],
+  [`garden_likes`], [`id`, `garden_owner_id` (FK), `liker_id` (FK), `message`, `created_at`], [*Ja*],
+  [`notifications`], [`id`, `user_id` (FK), `actor_id` (FK), `type`, `message`, `read`, `created_at`], [*Ja*],
 )
 
 === Tabelle `push_subscriptions` (neu)
@@ -539,6 +550,45 @@ Content-Disposition: attachment; filename="keep-growing-data.json"
 
 *Fehlerfall (404):* `{ "error": "No subscription" }` wenn keine Subscription gespeichert
 
+== Masken- und Routenübersicht
+
+=== Öffentliche Routen (kein Login erforderlich)
+
+#htable(
+  columns: (4.5cm, 4.5cm, 1fr),
+  hcell[Route], hcell[Datei], hcell[Funktion],
+  [`/`], [`app/page.tsx`], [Landing Page – Call-to-Action zu Registrierung und Login],
+  [`/login`], [`(auth)/login/page.tsx`], [E-Mail + Passwort Login; Weiterleitung bei Fehler mit `?error=true`],
+  [`/register`], [`(auth)/register/page.tsx`], [Registrierung; DHBW-E-Mail-Validierung serverseitig],
+  [`/forgot-password`], [`(auth)/forgot-password/page.tsx`], [Passwort-Reset-Link per E-Mail anfordern],
+  [`/reset-password`], [`(auth)/reset-password/page.tsx`], [Neues Passwort nach Reset-E-Mail setzen],
+)
+
+=== Geschützte Routen (Redirect auf `/login` wenn keine aktive Session)
+
+#htable(
+  columns: (5cm, 5cm, 1fr),
+  hcell[Route], hcell[Datei], hcell[Funktion],
+  [`/dashboard`], [`(mainpage)/dashboard/page.tsx`], [Tagesübersicht: Mood-Score, Tagebucheintrag, SVG-Insights],
+  [`/blumengarten`], [`(mainpage)/blumengarten/page.tsx`], [Blumengarten anzeigen; Monatsreset-Logik],
+  [`/blumengarten/auswahl_blume`], [`(mainpage)/blumengarten/auswahl_blume/page.tsx`], [Blume für neuen Eintrag auswählen],
+  [`/blumengarten/freunde`], [`(mainpage)/blumengarten/freunde/page.tsx`], [Freundesliste: andere Gärten anzeigen],
+  [`/blumengarten/freunde/[friendId]`], [`(mainpage)/blumengarten/freunde/[friendId]/page.tsx`], [Blumengarten eines Freundes ansehen],
+  [`/trainings`], [`(mainpage)/trainings/page.tsx`], [Übersicht aller Mental-Health-Trainings],
+  [`/einstellungen`], [`(mainpage)/einstellungen/page.tsx`], [Passwort, Push-Reminder, Gartenreset, Logout, DSGVO-Funktionen],
+  [`/impressum`], [`(mainpage)/impressum/page.tsx`], [About Us, Datenschutz, AGB],
+)
+
+=== API-Routes
+
+#htable(
+  columns: (1.5cm, 3.5cm, 1fr, 2cm),
+  hcell[Methode], hcell[Route], hcell[Funktion], hcell[Auth],
+  [GET],  [`/api/export`], [JSON-Datenexport aller eigenen Daten (DSGVO Art. 20)], [Required],
+  [POST], [`/api/push`],   [Push-Subscription in Datenbank speichern (UPSERT)], [Required],
+  [GET],  [`/api/push`],   [Test-Push-Notification an gespeicherte Subscription senden], [Required],
+)
+
 == Feature-Spezifikationen
 
 === F01 – DHBW-E-Mail-Validierung (PF08)
@@ -574,14 +624,14 @@ if (!email.toLowerCase().match(/@(stud(ent)?\.)?dhbw/)) {
 
 *Zweck:* Umsetzung des Rechts auf Vergessenwerden
 
-*UI:* Versteckt hinter `<details>`-Element in den Einstellungen mit expliziter Bestätigungsschaltfläche „Ja, Account dauerhaft löschen"
+*UI:* Versteckt hinter `<details>`-Element in den Einstellungen mit expliziter Bestätigungsschaltfläche „Yes, permanently delete my account"
 
 *Lösch-Sequenz (Server Action `deleteAccount()`):*
 
 #htable(
   columns: (1cm, 3cm, 1fr),
   hcell[Schritt], hcell[Aktion], hcell[Details],
-  [1], [Parallel-Delete], [`daily_entries`, `flowers`, `garden_settings` WHERE `user_id = user.id`],
+  [1], [Parallel-Delete], [`daily_entries`, `flower_garden`, `garden_settings` WHERE `user_id = user.id`],
   [2], [Auth-Delete], [`supabase.auth.admin.deleteUser(user.id)` – löscht Auth-Eintrag und `push_subscriptions` via CASCADE],
   [3], [Session-Ende], [`supabase.auth.signOut()`],
   [4], [Redirect], [→ `/login?deleted=true` mit Bestätigungsmeldung],
@@ -714,6 +764,72 @@ npx playwright test --ui       # interaktiver UI-Modus
 npx playwright show-report     # HTML-Bericht anzeigen
 ```
 
+---
+
+=== F08 – Freunde-System (PF16)
+
+*Zweck:* Soziale Komponente – Studierende können befreundeten Personen beim Wachstum ihres Blumengartens zusehen und sich gegenseitig motivieren.
+
+*Funktionsumfang:*
+
+#htable(
+  columns: (3.5cm, 1fr),
+  hcell[Funktion], hcell[Beschreibung],
+  [Freund hinzufügen], [Suche per E-Mail-Adresse; Anfrage wird als `pending` in `friendships` gespeichert],
+  [Anfrage annehmen], [Nur die angefragte Person kann annehmen → Status wechselt auf `accepted`],
+  [Garten anzeigen], [Befreundete Personen sehen gegenseitig ihre Blumengärten (RLS-Policy `are_friends()`)],
+  [Garten liken], [Herz-Button auf fremdem Garten; optionale kurze Nachricht (`garden_likes`)],
+  [Benachrichtigungen], [Realtime-Push bei neuer Freundschaftsanfrage, Annahme und Garden-Like (Supabase Realtime auf `notifications`)],
+)
+
+*Datenbankschema (Auszug aus `supabase-migration.sql`):*
+
+```sql
+-- Öffentliche Profile (Suche per E-Mail)
+CREATE TABLE profiles (
+  id        UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  email     TEXT UNIQUE
+);
+
+-- Freundschaftsanfragen
+CREATE TABLE friendships (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  requester_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  addressee_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  status       TEXT NOT NULL DEFAULT 'pending'
+               CHECK (status IN ('pending','accepted')),
+  UNIQUE (requester_id, addressee_id)
+);
+
+-- Garden-Likes (mehrfach möglich, mit optionaler Nachricht)
+CREATE TABLE garden_likes (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  garden_owner_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  liker_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  message         TEXT
+);
+
+-- Benachrichtigungen (automatisch per DB-Trigger erzeugt)
+CREATE TABLE notifications (
+  id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id  UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  actor_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  type     TEXT NOT NULL DEFAULT 'garden_like',
+  read     BOOLEAN NOT NULL DEFAULT false
+);
+```
+
+*Besonderheiten:*
+- DB-Trigger erzeugen Benachrichtigungen automatisch bei neuen Likes und Freundschaftsanfragen – der Client schreibt nie direkt in `notifications`
+- Die Hilfsfunktion `are_friends(person_a, person_b)` (Security Definer) wird in RLS-Policies referenziert, damit Freunde gegenseitig `garden_settings` und `flowers` lesen dürfen
+- Neues Profil wird bei jeder Registrierung automatisch via Trigger in `profiles` angelegt
+
+*Betroffene Dateien:*
+- `src/app/(mainpage)/blumengarten/freunde/page.tsx` – Freundesliste, Suche, Anfragen annehmen/ablehnen
+- `src/app/(mainpage)/blumengarten/freunde/[friendId]/page.tsx` – Blumengarten eines Freundes
+- `src/app/(mainpage)/blumengarten/freunde/supabase-migration.sql` – vollständige DB-Migration
+
 == Sicherheitskonzept
 
 #htable(
@@ -727,6 +843,26 @@ npx playwright show-report     # HTML-Bericht anzeigen
   [Dependency-Sicherheit], [Regelmäßige `npm audit`-Checks; aktueller Stand: keine kritischen Vulnerabilities],
   [SQL-Injection], [Alle DB-Zugriffe via Supabase JS Client mit Prepared Statements; kein rohes SQL im Anwendungscode],
 )
+
+== Übernommene fachliche Logiken aus V1.0
+
+Die folgenden fachlichen Kernlogiken wurden von der Vorgängergruppe (Florian Trapp, Elias Huber, Marlon Brunner) entwickelt und unverändert übernommen. Sie werden hier beschrieben, damit der Gesamtüberblick vollständig ist; die ursprüngliche Herleitung und Designentscheidungen sind in der Gesamtdokumentation V1.0 dokumentiert.
+
+=== Row Level Security (RLS)
+
+Alle Tabellen in Supabase sind durch PostgreSQL Row Level Security abgesichert. Jede Policy erlaubt Nutzenden ausschließlich den Zugriff auf eigene Zeilen (`auth.uid() = user_id`) – unabhängig vom Anwendungscode. Dadurch kann kein Nutzer fremde Daten lesen oder verändern, selbst wenn eine API-Anfrage manipuliert wird. In V2.0 wurde dieses Prinzip auf die neue Tabelle `push_subscriptions` ausgeweitet, und im Freunde-System erweitert (Freunde dürfen `garden_settings` und `flowers` lesen, aber nicht schreiben).
+
+=== Monatlicher Blumengarten-Reset
+
+Beim Laden der Blumengarten-Seite (`/blumengarten`) wird geprüft, ob das letzte Reset-Datum (`garden_settings.last_reset_at`) im aktuellen Kalendermonat liegt. Liegt es in einem früheren Monat, setzt das System `last_reset_at` automatisch auf den aktuellen Zeitpunkt. Blumen werden dabei nicht gelöscht, sondern ausgeblendet: Der Garten zeigt nur Blumen, die nach dem letzten `last_reset_at` angelegt wurden. Nutzende können den Reset außerdem manuell über die Einstellungen auslösen.
+
+=== Audio-Rotation im Trainingsbereich
+
+Der Trainingsbereich (`/trainings`) spielt Audio-Inhalte nach einem Wechsel-Prinzip ab. Innerhalb jeder Trainingskategorie wird reihum das nächste Audio aus der Datenbanktabelle `audio_trainings` ausgewählt. Die Trainings sind nach Kategorien gruppiert; der Nutzer wählt eine Kategorie, und das System wählt automatisch das nächste verfügbare Audio.
+
+=== SVG-basierte Stimmungsvisualisierung im Dashboard
+
+Das Dashboard berechnet aus den `daily_entries` der letzten Tage eine SVG-Liniengrafik, die den Stimmungsverlauf visualisiert. Die Koordinaten der Punkte (`svgPoints`) werden aus den `score`-Werten (1–10) und dem Index des Eintrags berechnet und direkt als `<polyline>`-Punkte in das SVG eingesetzt.
 
 // ============================================================
 // TEIL IV – PROJEKTDOKUMENTATION
@@ -748,6 +884,7 @@ npx playwright show-report     # HTML-Bericht anzeigen
   [Push-Reminder (Opt-in)], [✓ SOLL], [✓ Implementiert],
   [Error Boundary], [✓ SOLL], [✓ Implementiert],
   [Playwright E2E-Tests (mind. 8)], [✓ SOLL], [✓ 8 Tests vorhanden],
+  [Freunde-System (Anfragen, Garten, Likes, Notifications)], [✓ SOLL], [✓ Implementiert],
   [Automatischer täglicher Cron-Push], [✓ KANN], [○ Nicht implementiert],
 )
 
@@ -826,7 +963,7 @@ git remote set-url origin https://github.com/Vietnameseguy04/Keep_Growing_App.gi
 
 == Datenschutz-Konzept (DSGVO)
 
-Keep Growing verarbeitet nach Art. 9 DSGVO potenziell besonders schützenswerte Gesundheitsdaten (Stimmungswerte, mentale Gesundheitseinträge). Folgende technisch-organisatorische Maßnahmen (TOMs) wurden implementiert:
+Keep Growing verarbeitet nach Art. 9 DSGVO #super[[1]] potenziell besonders schützenswerte Gesundheitsdaten (Stimmungswerte, mentale Gesundheitseinträge). Folgende technisch-organisatorische Maßnahmen (TOMs) wurden implementiert:
 
 #htable(
   columns: (3.5cm, 1fr),
@@ -1000,6 +1137,18 @@ Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungew
 == Ausblick
 
 Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte. Der größte offene Punkt ist der automatische Cron-Push – wer diesen umsetzt, bringt die App auf das nächste Qualitätsniveau.
+
+// ============================================================
+// QUELLENVERZEICHNIS
+// ============================================================
+= Quellenverzeichnis
+
+#htable(
+  columns: (1cm, 1fr),
+  hcell[\#], hcell[Quelle],
+  [[1]], [Europäisches Parlament und Rat der Europäischen Union: _Verordnung (EU) 2016/679 zum Schutz natürlicher Personen bei der Verarbeitung personenbezogener Daten (Datenschutz-Grundverordnung, DSGVO)_. Amtsblatt der EU, 2016. Online: https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32016R0679],
+  [[2]], [K. Schwaber & J. Sutherland: _The Scrum Guide – The Definitive Guide to Scrum: The Rules of the Game_. Scrum.org, 2020. Online: https://scrumguides.org/scrum-guide.html],
+)
 
 // ============================================================
 // ANHÄNGE

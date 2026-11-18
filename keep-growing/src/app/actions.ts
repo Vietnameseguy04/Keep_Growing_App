@@ -137,7 +137,7 @@ export async function deleteAccount() {
 
   await Promise.all([
     supabase.from('daily_entries').delete().eq('user_id', user.id),
-    supabase.from('flowers').delete().eq('user_id', user.id),
+    supabase.from('flower_garden').delete().eq('user_id', user.id),
     supabase.from('garden_settings').delete().eq('user_id', user.id),
   ]);
 
