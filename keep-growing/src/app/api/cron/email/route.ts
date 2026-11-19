@@ -24,8 +24,8 @@ export async function GET(request: Request) {
   const results = await Promise.allSettled(
     users
       .filter(u => !!u.email)
-      .map(user =>
-        resend.emails.send({
+      .map(async user => {
+        const { data, error } = await resend.emails.send({
           from: 'Keep Growing <onboarding@resend.dev>',
           to: user.email!,
           subject: 'Keep Growing – Dein täglicher Check-in 🌸',
@@ -41,8 +41,10 @@ export async function GET(request: Request) {
               <p style="color:#aaa;font-size:12px;margin-top:24px;">Keep Growing · DHBW Ravensburg</p>
             </div>
           `,
-        })
-      )
+        });
+        if (error) throw new Error(error.message);
+        return data;
+      })
   );
 
   const sent = results.filter(r => r.status === 'fulfilled').length;
