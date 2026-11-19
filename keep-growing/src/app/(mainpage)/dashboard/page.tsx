@@ -74,6 +74,15 @@ export default async function DashboardPage() {
     .eq('created_at', today)
     .maybeSingle();
 
+  // Letzte 14 Einträge für Journal-Ansicht (ohne heute)
+  const { data: history } = await supabase
+    .from('daily_entries')
+    .select('score, note, created_at')
+    .eq('user_id', user.id)
+    .neq('created_at', today)
+    .order('created_at', { ascending: false })
+    .limit(14);
+
   const stats = await getTrainingStats(supabase, user.id);
 
   // Koordinaten für die gelbe Linie im Insights-Graph
@@ -180,6 +189,32 @@ export default async function DashboardPage() {
           </button>
         </div>
       </form>
+
+      {/* Journal / History */}
+      {history && history.length > 0 && (
+        <div className="w-full max-w-md mb-10">
+          <h3 className="font-bold text-gray-800 mb-4 text-lg">Journal</h3>
+          <div className="flex flex-col gap-3">
+            {history.map((item) => {
+              const emoji = item.score === 4 ? '🤩' : item.score === 3 ? '😊' : item.score === 2 ? '😢' : item.score === 1 ? '😴' : '—';
+              const date = new Date(item.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+              return (
+                <div key={item.created_at} className="bg-[#f2f2eb] rounded-[20px] p-4 flex gap-4 items-start">
+                  <span className="text-2xl mt-0.5">{emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wide mb-1">{date}</p>
+                    {item.note ? (
+                      <p className="text-gray-700 text-sm leading-relaxed">{item.note}</p>
+                    ) : (
+                      <p className="text-gray-400 text-sm italic">No note</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Insights Bereich */}
       <div className="w-full max-w-md mt-4">
