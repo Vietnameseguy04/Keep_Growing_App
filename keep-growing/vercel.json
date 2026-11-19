@@ -1,12 +1,7 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/push",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/cron/weekly",
-      "schedule": "0 8 * * 0"
-    }
+    { "path": "/api/cron/push", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/email", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/weekly", "schedule": "0 8 * * 0" }
   ]
 }
