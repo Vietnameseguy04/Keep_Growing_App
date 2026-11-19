@@ -1013,12 +1013,12 @@ Das Dashboard berechnet aus den `daily_entries` der letzten Tage eine SVG-Linien
   [Playwright E2E-Tests (mind. 8)], [✓ SOLL], [✓ 8 Tests vorhanden],
   [Freunde-System (Anfragen, Garten, Likes, Notifications)], [✓ SOLL], [✓ Implementiert],
   [Automatischer täglicher Cron-Push], [✓ KANN], [✓ Implementiert (täglich 8:00 Uhr)],
-  [E-Mail-Reminder via Resend], [✓ KANN], [✓ Implementiert (täglich 8:00 Uhr, Free Tier)],
+  [E-Mail-Reminder via Resend], [✓ KANN], [⏸ Implementiert, Cron deaktiviert (Domain-Verifizierung ausstehend)],
 )
 
 === Abweichungen und Begründungen
 
-Der automatische tägliche Cron-Push wurde implementiert: Jeden Morgen um 8:00 Uhr (CET) sendet ein Vercel Cron Job über `/api/cron/push` eine Push-Notification an alle Nutzer mit aktiver Subscription. Zusätzlich wurde ein E-Mail-Reminder über `/api/cron/email` via Resend implementiert, der täglich zur selben Zeit an alle registrierten Nutzer versendet wird. Beide Endpoints sind via `CRON_SECRET` (Bearer-Token) gesichert und nutzen den Supabase Service Role Key.
+Der automatische tägliche Cron-Push wurde implementiert: Jeden Morgen um 8:00 Uhr (CET) sendet ein Vercel Cron Job über `/api/cron/push` eine Push-Notification an alle Nutzer mit aktiver Subscription. Zusätzlich wurde ein E-Mail-Reminder über `/api/cron/email` via Resend implementiert — der automatische Cron ist jedoch bis zur Verifizierung einer eigenen Absender-Domain deaktiviert, da der Resend Free Tier Sender `onboarding@resend.dev` nur an die Resend-Kontoinhaber-E-Mail zustellen kann. Der Endpoint selbst ist funktionsfähig und getestet.
 
 == Aufgetretene Herausforderungen und Lösungen
 
