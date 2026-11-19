@@ -12,6 +12,7 @@ function urlBase64ToUint8Array(base64String: string) {
 export default function PushNotificationToggle() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'on' | 'error'>('idle');
   const [justActivated, setJustActivated] = useState(false);
+  const [justDeactivated, setJustDeactivated] = useState(false);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -59,6 +60,7 @@ export default function PushNotificationToggle() {
       await fetch('/api/push', { method: 'DELETE' });
       setStatus('idle');
       setJustActivated(false);
+      setJustDeactivated(true);
     } catch {
       setStatus('error');
     }
@@ -66,6 +68,11 @@ export default function PushNotificationToggle() {
 
   return (
     <div>
+      {justDeactivated && (
+        <p className="mb-3 p-3 bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-2xl text-center">
+          Reminders deactivated. You will no longer receive daily reminders.
+        </p>
+      )}
       {justActivated && (
         <p className="mb-3 p-3 bg-green-50 border border-green-100 text-green-700 text-sm rounded-2xl text-center">
           Reminders activated! You will be reminded every morning at 8:00. 🌸
