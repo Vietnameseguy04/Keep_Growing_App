@@ -738,113 +738,6 @@ VAPID_EMAIL                   (Kontakt-E-Mail für Push-Services)
 
 ---
 
-=== F09 – Journal / Eintragshistorie (Dashboard)
-
-*Zweck:* Nutzende können vergangene Tageseinträge (Mood-Score + Notiz) einsehen, damit Notizen nicht "ins Nirgendwo verschwinden"
-
-*Darstellung:* Unterhalb des heutigen Eintragsformulars auf `/dashboard` werden die letzten 14 Tage als Liste angezeigt — chronologisch absteigend, mit Datum, Mood-Emoji und Notiztext.
-
-*Technische Umsetzung:*
-```typescript
-const { data: history } = await supabase
-  .from('daily_entries')
-  .select('score, note, created_at')
-  .eq('user_id', user.id)
-  .neq('created_at', today)
-  .order('created_at', { ascending: false })
-  .limit(14);
-```
-
-*Verhalten:*
-- Heutiger Eintrag wird ausgeblendet (`.neq('created_at', today)`) — er ist bereits im Formular sichtbar
-- Wenn noch keine historischen Einträge existieren, wird der Journal-Abschnitt ausgeblendet
-- Einträge ohne Notiz zeigen "No note" in grau
-- Emoji wird anhand des gespeicherten Scores rekonstruiert: 4 → 🤩, 3 → 😊, 2 → 😢, 1 → 😴
-
-*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
-
----
-
-=== F10 – Streak Counter
-
-*Zweck:* Gamification-Element das aufeinanderfolgende Tage mit Einträgen zählt und als 🔥-Badge neben dem Greeting anzeigt — motiviert zur täglichen Nutzung
-
-*Berechnung:*
-```typescript
-function calculateStreak(dates: string[], today: string): number {
-  const dateSet = new Set(dates);
-  let streak = 0;
-  const current = new Date(today);
-  while (dateSet.has(current.toLocaleDateString('en-CA'))) {
-    streak++;
-    current.setDate(current.getDate() - 1);
-  }
-  return streak;
-}
-```
-
-*Datenbasis:* Letzte 100 `daily_entries` des Nutzers (reicht für >3 Monate Streak). Anzeige nur wenn Streak > 0.
-
-*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
-
----
-
-=== F11 – Mood-Graph in Insights
-
-*Zweck:* Zweite Linie im wöchentlichen Insights-Graph zeigt den durchschnittlichen Mood-Score pro Woche (gestrichelt, rosa) — ergänzt den bestehenden Trainings-Graph (gelb)
-
-*Skala:* Score 1–4 → Y-Achse 100–0 % (Score 1 = unten, Score 4 = oben)
-
-*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
-
----
-
-=== F12 – Wöchentlicher Push-Rückblick
-
-*Zweck:* Jeden Sonntag um 9:00 Uhr (CET) erhalten alle Nutzer mit aktiver Push-Subscription eine personalisierte Zusammenfassung der vergangenen Woche
-
-*Beispiel-Notification:*
-```
-Titel: Keep Growing – Dein Wochenrückblick 🌸
-Body:  5 Einträge · Ø Stimmung 😊 · 3 Trainings diese Woche
-```
-
-*Technisch:* Gleiche Infrastruktur wie täglicher Cron — `CRON_SECRET` + Supabase Service Role Key. Pro Nutzer werden `daily_entries` und `trainings_log` der letzten 7 Tage abgefragt.
-
-*Vercel Cron:* `0 8 * * 0` (Sonntags 8:00 UTC = 9:00 CET)
-
-*Betroffene Dateien:*
-- `src/app/api/cron/weekly/route.ts`
-- `vercel.json`
-
----
-
-=== F13 – E-Mail-Reminder (Resend)
-
-*Zweck:* Täglich um 8:00 Uhr (CET) wird zusätzlich zur Push-Notification eine E-Mail an alle registrierten Nutzer versendet — als Fallback für Geräte ohne Push-Unterstützung (z.B. ältere iPhones) und als zusätzlicher Touchpoint.
-
-*Technologie:* #link("https://resend.com")[Resend] — transaktionaler E-Mail-Dienst mit Next.js SDK. Free Tier: 3.000 E-Mails/Monat, 100/Tag.
-
-*Beispiel-E-Mail:*
-```
-Von:    Keep Growing <onboarding@resend.dev>
-Betreff: Keep Growing – Dein täglicher Check-in 🌸
-Body:   Wie geht es dir heute? Nimm dir einen Moment für dein Wohlbefinden.
-        [Zum Dashboard →]
-```
-
-*Technisch:* Supabase `auth.admin.listUsers()` liefert alle registrierten Nutzer inkl. E-Mail-Adresse. Pro Nutzer wird `resend.emails.send()` aufgerufen.
-
-*Vercel Cron:* `0 7 * * *` (täglich 7:00 UTC = 8:00 CET)
-
-*Einschränkung Free Tier:* Mit dem Resend-Sender `onboarding@resend.dev` können E-Mails nur an die beim Resend-Account registrierte E-Mail-Adresse gesendet werden. Für den produktiven Betrieb mit mehreren Nutzern muss eine eigene Domain verifiziert werden (kostenlos im Resend-Dashboard). Das Resend Free Tier erlaubt bis zu 3.000 E-Mails/Monat — bei einem DHBW-Kurs mit ~25 Studierenden entspricht das ca. 750 E-Mails/Monat (25 Nutzer × 30 Tage), was weit unterhalb des Limits liegt.
-
-*Betroffene Dateien:*
-- `src/app/api/cron/email/route.ts`
-- `vercel.json`
-
----
-
 === F06 – Error Boundary (PF14)
 
 *Zweck:* Fehler in Unterseiten isolieren, damit die gesamte App nicht abstürzt
@@ -956,6 +849,113 @@ CREATE TABLE notifications (
 - `src/app/(mainpage)/blumengarten/freunde/page.tsx` – Freundesliste, Suche, Anfragen annehmen/ablehnen
 - `src/app/(mainpage)/blumengarten/freunde/[friendId]/page.tsx` – Blumengarten eines Freundes
 - `src/app/(mainpage)/blumengarten/freunde/supabase-migration.sql` – vollständige DB-Migration
+
+---
+
+=== F09 – Journal / Eintragshistorie (Dashboard)
+
+*Zweck:* Nutzende können vergangene Tageseinträge (Mood-Score + Notiz) einsehen, damit Notizen nicht "ins Nirgendwo verschwinden"
+
+*Darstellung:* Unterhalb des heutigen Eintragsformulars auf `/dashboard` werden die letzten 14 Tage als Liste angezeigt — chronologisch absteigend, mit Datum, Mood-Emoji und Notiztext.
+
+*Technische Umsetzung:*
+```typescript
+const { data: history } = await supabase
+  .from('daily_entries')
+  .select('score, note, created_at')
+  .eq('user_id', user.id)
+  .neq('created_at', today)
+  .order('created_at', { ascending: false })
+  .limit(14);
+```
+
+*Verhalten:*
+- Heutiger Eintrag wird ausgeblendet (`.neq('created_at', today)`) — er ist bereits im Formular sichtbar
+- Wenn noch keine historischen Einträge existieren, wird der Journal-Abschnitt ausgeblendet
+- Einträge ohne Notiz zeigen "No note" in grau
+- Emoji wird anhand des gespeicherten Scores rekonstruiert: 4 → 🤩, 3 → 😊, 2 → 😢, 1 → 😴
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
+
+---
+
+=== F10 – Streak Counter
+
+*Zweck:* Gamification-Element das aufeinanderfolgende Tage mit Einträgen zählt und als 🔥-Badge neben dem Greeting anzeigt — motiviert zur täglichen Nutzung
+
+*Berechnung:*
+```typescript
+function calculateStreak(dates: string[], today: string): number {
+  const dateSet = new Set(dates);
+  let streak = 0;
+  const current = new Date(today);
+  while (dateSet.has(current.toLocaleDateString('en-CA'))) {
+    streak++;
+    current.setDate(current.getDate() - 1);
+  }
+  return streak;
+}
+```
+
+*Datenbasis:* Letzte 100 `daily_entries` des Nutzers (reicht für >3 Monate Streak). Anzeige nur wenn Streak > 0.
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
+
+---
+
+=== F11 – Mood-Graph in Insights
+
+*Zweck:* Zweite Linie im wöchentlichen Insights-Graph zeigt den durchschnittlichen Mood-Score pro Woche (gestrichelt, rosa) — ergänzt den bestehenden Trainings-Graph (gelb)
+
+*Skala:* Score 1–4 → Y-Achse 100–0 % (Score 1 = unten, Score 4 = oben)
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
+
+---
+
+=== F12 – Wöchentlicher Push-Rückblick
+
+*Zweck:* Jeden Sonntag um 9:00 Uhr (CET) erhalten alle Nutzer mit aktiver Push-Subscription eine personalisierte Zusammenfassung der vergangenen Woche
+
+*Beispiel-Notification:*
+```
+Titel: Keep Growing – Dein Wochenrückblick 🌸
+Body:  5 Einträge · Ø Stimmung 😊 · 3 Trainings diese Woche
+```
+
+*Technisch:* Gleiche Infrastruktur wie täglicher Cron — `CRON_SECRET` + Supabase Service Role Key. Pro Nutzer werden `daily_entries` und `trainings_log` der letzten 7 Tage abgefragt.
+
+*Vercel Cron:* `0 8 * * 0` (Sonntags 8:00 UTC = 9:00 CET)
+
+*Betroffene Dateien:*
+- `src/app/api/cron/weekly/route.ts`
+- `vercel.json`
+
+---
+
+=== F13 – E-Mail-Reminder (Resend)
+
+*Zweck:* Täglich um 8:00 Uhr (CET) wird zusätzlich zur Push-Notification eine E-Mail an alle registrierten Nutzer versendet — als Fallback für Geräte ohne Push-Unterstützung (z.B. ältere iPhones) und als zusätzlicher Touchpoint.
+
+*Technologie:* #link("https://resend.com")[Resend] — transaktionaler E-Mail-Dienst mit Next.js SDK. Free Tier: 3.000 E-Mails/Monat, 100/Tag.
+
+*Beispiel-E-Mail:*
+```
+Von:    Keep Growing <onboarding@resend.dev>
+Betreff: Keep Growing – Dein täglicher Check-in 🌸
+Body:   Wie geht es dir heute? Nimm dir einen Moment für dein Wohlbefinden.
+        [Zum Dashboard →]
+```
+
+*Technisch:* Supabase `auth.admin.listUsers()` liefert alle registrierten Nutzer inkl. E-Mail-Adresse. Pro Nutzer wird `resend.emails.send()` aufgerufen.
+
+*Vercel Cron:* `0 7 * * *` (täglich 7:00 UTC = 8:00 CET)
+
+*Einschränkung Free Tier:* Mit dem Resend-Sender `onboarding@resend.dev` können E-Mails nur an die beim Resend-Account registrierte E-Mail-Adresse gesendet werden. Für den produktiven Betrieb mit mehreren Nutzern muss eine eigene Domain verifiziert werden (kostenlos im Resend-Dashboard). Das Resend Free Tier erlaubt bis zu 3.000 E-Mails/Monat — bei einem DHBW-Kurs mit ~25 Studierenden entspricht das ca. 750 E-Mails/Monat (25 Nutzer × 30 Tage), was weit unterhalb des Limits liegt.
+
+*Betroffene Dateien:*
+- `src/app/api/cron/email/route.ts`
+- `vercel.json`
 
 == Sicherheitskonzept
 
