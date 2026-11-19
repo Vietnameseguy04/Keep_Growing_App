@@ -819,6 +819,32 @@ Body:  5 Einträge · Ø Stimmung 😊 · 3 Trainings diese Woche
 
 ---
 
+=== F13 – E-Mail-Reminder (Resend)
+
+*Zweck:* Täglich um 8:00 Uhr (CET) wird zusätzlich zur Push-Notification eine E-Mail an alle registrierten Nutzer versendet — als Fallback für Geräte ohne Push-Unterstützung (z.B. ältere iPhones) und als zusätzlicher Touchpoint.
+
+*Technologie:* #link("https://resend.com")[Resend] — transaktionaler E-Mail-Dienst mit Next.js SDK. Free Tier: 3.000 E-Mails/Monat, 100/Tag.
+
+*Beispiel-E-Mail:*
+```
+Von:    Keep Growing <onboarding@resend.dev>
+Betreff: Keep Growing – Dein täglicher Check-in 🌸
+Body:   Wie geht es dir heute? Nimm dir einen Moment für dein Wohlbefinden.
+        [Zum Dashboard →]
+```
+
+*Technisch:* Supabase `auth.admin.listUsers()` liefert alle registrierten Nutzer inkl. E-Mail-Adresse. Pro Nutzer wird `resend.emails.send()` aufgerufen.
+
+*Vercel Cron:* `0 7 * * *` (täglich 7:00 UTC = 8:00 CET)
+
+*Einschränkung Free Tier:* Mit dem Resend-Sender `onboarding@resend.dev` können E-Mails nur an die beim Resend-Account registrierte E-Mail-Adresse gesendet werden. Für den produktiven Betrieb mit mehreren Nutzern muss eine eigene Domain verifiziert werden (kostenlos im Resend-Dashboard). Das Resend Free Tier erlaubt bis zu 3.000 E-Mails/Monat — bei einem DHBW-Kurs mit ~25 Studierenden entspricht das ca. 750 E-Mails/Monat (25 Nutzer × 30 Tage), was weit unterhalb des Limits liegt.
+
+*Betroffene Dateien:*
+- `src/app/api/cron/email/route.ts`
+- `vercel.json`
+
+---
+
 === F06 – Error Boundary (PF14)
 
 *Zweck:* Fehler in Unterseiten isolieren, damit die gesamte App nicht abstürzt
@@ -987,11 +1013,12 @@ Das Dashboard berechnet aus den `daily_entries` der letzten Tage eine SVG-Linien
   [Playwright E2E-Tests (mind. 8)], [✓ SOLL], [✓ 8 Tests vorhanden],
   [Freunde-System (Anfragen, Garten, Likes, Notifications)], [✓ SOLL], [✓ Implementiert],
   [Automatischer täglicher Cron-Push], [✓ KANN], [✓ Implementiert (täglich 8:00 Uhr)],
+  [E-Mail-Reminder via Resend], [✓ KANN], [✓ Implementiert (täglich 8:00 Uhr, Free Tier)],
 )
 
 === Abweichungen und Begründungen
 
-Der automatische tägliche Cron-Push wurde implementiert: Jeden Morgen um 8:00 Uhr (CET) sendet ein Vercel Cron Job über `/api/cron/push` eine Push-Notification an alle Nutzer mit aktiver Subscription. Der Endpoint ist via `CRON_SECRET` (Bearer-Token) gesichert und nutzt den Supabase Service Role Key, um alle aktiven Subscriptions ohne User-Auth abrufen zu können.
+Der automatische tägliche Cron-Push wurde implementiert: Jeden Morgen um 8:00 Uhr (CET) sendet ein Vercel Cron Job über `/api/cron/push` eine Push-Notification an alle Nutzer mit aktiver Subscription. Zusätzlich wurde ein E-Mail-Reminder über `/api/cron/email` via Resend implementiert, der täglich zur selben Zeit an alle registrierten Nutzer versendet wird. Beide Endpoints sind via `CRON_SECRET` (Bearer-Token) gesichert und nutzen den Supabase Service Role Key.
 
 == Aufgetretene Herausforderungen und Lösungen
 
@@ -1191,8 +1218,10 @@ Die ursprüngliche Roadmap der V1.0 sah einen kommerziellen Betrieb vor. Diese A
   columns: (3cm, 1fr, 2cm),
   hcell[Risiko], hcell[Beschreibung / Auswirkung], hcell[Schwere],
   [Supabase Free Tier], [500 MB DB, 50.000 MAU – bei vollständigem DHBW-Rollout Upgrade nötig (25 \$/Monat)], [MITTEL],
+  [Resend Free Tier], [3.000 E-Mails/Monat, 100/Tag – reicht für Pilotbetrieb (~25 Nutzer × 30 Tage = 750 Mails); für größeren Rollout Upgrade oder eigene Domain erforderlich], [NIEDRIG],
+  [Resend Absender-Domain], [Aktuell `onboarding@resend.dev` – nur testweise; für Produktion eigene Domain bei Resend verifizieren (kostenlos)], [MITTEL],
   [Kein Error-Monitoring], [Produktionsfehler werden nicht aktiv gemeldet (kein Sentry o.Ä.)], [MITTEL],
-  [Push auf iOS < 16.4], [Web Push auf älteren iPhones nicht unterstützt – Reminders nicht verfügbar], [NIEDRIG],
+  [Push auf iOS < 16.4], [Web Push auf älteren iPhones nicht unterstützt – Reminders nur per E-Mail verfügbar], [NIEDRIG],
   [VAPID-Key-Verlust], [Bei Key-Verlust müssen alle Subscriptions neu eingeholt werden], [MITTEL],
   [TypeScript `strict`], [Einige Legacy-Teile aus V1.0 nutzen noch `any`-Types – technische Schuld], [NIEDRIG],
 )
@@ -1231,6 +1260,8 @@ Das Arbeiten mit Supabase Row Level Security war neu für mich und anfangs ungew
 == Ausblick
 
 Keep Growing ist nach Abschluss des Wintersemesters 2026/27 bereit für einen DHBW-internen Pilotbetrieb. Die nächste Gruppe kann nahtlos anknüpfen: Die Codebasis ist sauber dokumentiert, das Repository ist öffentlich zugänglich, und die Roadmap Phase 2 bietet klare Anknüpfungspunkte.
+
+Für einen produktiven Betrieb mit mehreren Kursen sind zwei konkrete Schritte empfohlen: Erstens die Verifizierung einer eigenen Absender-Domain bei Resend (z.B. `erinnerung@keep-growing.de`), damit E-Mail-Reminder an alle Nutzer zugestellt werden können. Zweitens die Prüfung, ob das Supabase Free Tier bei steigender Nutzerzahl ausreicht, oder ob ein Upgrade (25 \$/Monat) notwendig wird.
 
 // ============================================================
 // QUELLENVERZEICHNIS
