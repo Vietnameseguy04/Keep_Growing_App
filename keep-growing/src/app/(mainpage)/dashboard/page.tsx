@@ -185,7 +185,7 @@ export default async function DashboardPage() {
             </h2>
             {streak > 0 && (
               <span className="text-sm font-bold text-[#b57a84] bg-[#f9f0f2] px-3 py-1 rounded-full whitespace-nowrap">
-                🔥 {streak}
+                Streak: {streak}
               </span>
             )}
           </div>
