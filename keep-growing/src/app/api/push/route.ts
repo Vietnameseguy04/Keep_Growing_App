@@ -26,7 +26,15 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true });
 }
 
-// Test-Notification senden
+// Subscription löschen
+export async function DELETE() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  await supabase.from('push_subscriptions').delete().eq('user_id', user.id);
+  return NextResponse.json({ success: true });
+}
 export async function GET() {
   initVapid();
   const supabase = await createClient();
