@@ -498,8 +498,9 @@ CREATE POLICY "Users manage own subscription"
   columns: (1.5cm, 3.5cm, 1fr, 2cm),
   hcell[Methode], hcell[Route], hcell[Funktion], hcell[Auth],
   [GET],  [`/api/export`], [Alle Nutzerdaten als JSON-Download zurückgeben (DSGVO Art. 20)], [Required],
-  [POST], [`/api/push`],   [Push-Subscription in Supabase speichern], [Required],
-  [GET],  [`/api/push`],   [Test-Push-Notification an gespeicherte Subscription senden], [Required],
+  [POST],   [`/api/push`],   [Push-Subscription in Supabase speichern], [Required],
+  [DELETE], [`/api/push`],   [Push-Subscription löschen (Deaktivierung)], [Required],
+  [GET],    [`/api/push`],   [Test-Push-Notification an gespeicherte Subscription senden], [Required],
 )
 
 === Route `GET /api/export`
@@ -569,7 +570,7 @@ Content-Disposition: attachment; filename="keep-growing-data.json"
 #htable(
   columns: (5cm, 5cm, 1fr),
   hcell[Route], hcell[Datei], hcell[Funktion],
-  [`/dashboard`], [`(mainpage)/dashboard/page.tsx`], [Tagesübersicht: Mood-Score, Tagebucheintrag, SVG-Insights],
+  [`/dashboard`], [`(mainpage)/dashboard/page.tsx`], [Tagesübersicht: Mood-Score, Tagebucheintrag, Journal (letzte 14 Tage), SVG-Insights],
   [`/blumengarten`], [`(mainpage)/blumengarten/page.tsx`], [Blumengarten anzeigen; Monatsreset-Logik],
   [`/blumengarten/auswahl_blume`], [`(mainpage)/blumengarten/auswahl_blume/page.tsx`], [Blume für neuen Eintrag auswählen],
   [`/blumengarten/freunde`], [`(mainpage)/blumengarten/freunde/page.tsx`], [Freundesliste: andere Gärten anzeigen],
@@ -692,10 +693,25 @@ if (!email.toLowerCase().match(/@(stud(ent)?\.)?dhbw/)) {
   columns: (1cm, 2.5cm, 1fr),
   hcell[\#], hcell[Akteur], hcell[Aktion],
   [1], [Browser], [Nutzer klickt „Activate Daily Reminders" → Berechtigung anfragen],
-  [2], [Browser], [`pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: VAPID_PUBLIC_KEY })`],
+  [2], [Browser], [`pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) })`],
   [3], [Client], [Subscription-Objekt per `POST /api/push` an Backend senden],
   [4], [Backend], [Subscription in `push_subscriptions` per UPSERT speichern],
+  [5], [UI], [Erfolgsmeldung + Button wechselt zu „Deactivate daily reminders ✓"],
 )
+
+*Ablauf – Deaktivierung:*
+
+#htable(
+  columns: (1cm, 2.5cm, 1fr),
+  hcell[\#], hcell[Akteur], hcell[Aktion],
+  [1], [Browser], [Nutzer klickt „Deactivate daily reminders"],
+  [2], [Browser], [`pushManager.getSubscription()` → `subscription.unsubscribe()`],
+  [3], [Client], [`DELETE /api/push` an Backend senden],
+  [4], [Backend], [Subscription aus `push_subscriptions` löschen],
+  [5], [UI], [Button wechselt zurück zu „Activate daily reminders"],
+)
+
+*Statuserhalt bei Navigation:* Beim Laden der Einstellungsseite prüft ein `useEffect`-Hook via `pushManager.getSubscription()` ob eine aktive Subscription existiert. Ist dies der Fall, wird der Button direkt als aktiv angezeigt ohne erneute Aktivierung zu erfordern.
 
 *Ablauf – Notification versenden:*
 
@@ -716,9 +732,36 @@ VAPID_EMAIL                   (Kontakt-E-Mail für Push-Services)
 ```
 
 *Betroffene Dateien:*
-- `src/app/api/push/route.ts` – POST/GET-Handler
-- `src/app/(mainpage)/einstellungen/PushNotificationToggle.tsx` – Subscribe-UI
+- `src/app/api/push/route.ts` – POST/DELETE/GET-Handler
+  - `src/app/(mainpage)/einstellungen/PushNotificationToggle.tsx` – Subscribe/Unsubscribe-UI
 - `public/sw.js` – Push-Event-Handler
+
+---
+
+=== F09 – Journal / Eintragshistorie (Dashboard)
+
+*Zweck:* Nutzende können vergangene Tageseinträge (Mood-Score + Notiz) einsehen, damit Notizen nicht "ins Nirgendwo verschwinden"
+
+*Darstellung:* Unterhalb des heutigen Eintragsformulars auf `/dashboard` werden die letzten 14 Tage als Liste angezeigt — chronologisch absteigend, mit Datum, Mood-Emoji und Notiztext.
+
+*Technische Umsetzung:*
+```typescript
+const { data: history } = await supabase
+  .from('daily_entries')
+  .select('score, note, created_at')
+  .eq('user_id', user.id)
+  .neq('created_at', today)
+  .order('created_at', { ascending: false })
+  .limit(14);
+```
+
+*Verhalten:*
+- Heutiger Eintrag wird ausgeblendet (`.neq('created_at', today)`) — er ist bereits im Formular sichtbar
+- Wenn noch keine historischen Einträge existieren, wird der Journal-Abschnitt ausgeblendet
+- Einträge ohne Notiz zeigen "No note" in grau
+- Emoji wird anhand des gespeicherten Scores rekonstruiert: 4 → 🤩, 3 → 😊, 2 → 😢, 1 → 😴
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
 
 ---
 
@@ -749,11 +792,14 @@ VAPID_EMAIL                   (Kontakt-E-Mail für Push-Services)
   [T-01], [Login-Seite lädt und zeigt E-Mail- und Passwort-Felder an], [Auth-Grundfunktion],
   [T-02], [Registrierung mit Nicht-DHBW-E-Mail wird abgelehnt (Fehlermeldung erscheint)], [F01 – Validierung],
   [T-03], [Registrierung mit DHBW-E-Mail passiert Validierung (kein Fehler auf Validator-Ebene)], [F01 – Validierung],
-  [T-04], [Falscher Login zeigt Fehlermeldung „Invalid credentials"]  , [Auth-Fehlerbehandlung],
+  [T-04], [Falscher Login zeigt Fehlermeldung „Invalid credentials"], [Auth-Fehlerbehandlung],
   [T-05], [Dashboard nach erfolgreichem Login erreichbar und zeigt Willkommensnachricht], [Core-Flow],
-  [T-06], [Blumengarten-Seite `/blumengarten` erreichbar], [Navigation],
-  [T-07], [Trainings-Seite `/trainings` erreichbar], [Navigation],
-  [T-08], [Einstellungen zeigen DSGVO-Abschnitt (Export-Link, Löschen-Button) und Reminders-Toggle], [F02, F03, F05],
+  [T-06], [Dashboard zeigt Mood-Formular und Notes-Textfeld], [F09 – Journal],
+  [T-07], [Journal-Abschnitt rendert wenn historische Einträge vorhanden], [F09 – Journal],
+  [T-08], [Blumengarten-Seite `/blumengarten` erreichbar], [Navigation],
+  [T-09], [Trainings-Seite `/trainings` erreichbar], [Navigation],
+  [T-10], [Einstellungen zeigen DSGVO-Abschnitt und Reminder-Button (Activate oder Deactivate)], [F02, F03, F05],
+  [T-11], [Logout funktioniert und leitet zu `/login` weiter], [Auth],
 )
 
 *Ausführung:*
