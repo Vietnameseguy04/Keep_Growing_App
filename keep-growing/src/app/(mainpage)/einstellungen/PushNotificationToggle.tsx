@@ -11,6 +11,7 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export default function PushNotificationToggle() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'on' | 'error'>('idle');
+  const [justActivated, setJustActivated] = useState(false);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
@@ -42,6 +43,7 @@ export default function PushNotificationToggle() {
 
       if (!res.ok) throw new Error('Failed to save subscription');
       setStatus('on');
+      setJustActivated(true);
     } catch {
       setStatus('error');
     }
@@ -56,6 +58,7 @@ export default function PushNotificationToggle() {
 
       await fetch('/api/push', { method: 'DELETE' });
       setStatus('idle');
+      setJustActivated(false);
     } catch {
       setStatus('error');
     }
@@ -63,6 +66,11 @@ export default function PushNotificationToggle() {
 
   return (
     <div>
+      {justActivated && (
+        <p className="mb-3 p-3 bg-green-50 border border-green-100 text-green-700 text-sm rounded-2xl text-center">
+          Reminders activated! You will be reminded every morning at 8:00. 🌸
+        </p>
+      )}
       {status === 'error' && (
         <p className="mb-3 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl text-center">
           Could not activate reminders. Please allow notifications in your browser.
