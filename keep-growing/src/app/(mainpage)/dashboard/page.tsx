@@ -18,6 +18,55 @@ function getISOWeek(date: Date) {
 }
 
 /**
+ * Berechnet die aktuelle Streak (aufeinanderfolgende Tage mit Einträgen)
+ */
+function calculateStreak(dates: string[], today: string): number {
+  const dateSet = new Set(dates);
+  let streak = 0;
+  const current = new Date(today);
+  while (dateSet.has(current.toLocaleDateString('en-CA'))) {
+    streak++;
+    current.setDate(current.getDate() - 1);
+  }
+  return streak;
+}
+
+/**
+ * Holt durchschnittlichen Mood-Score für die letzten 8 Wochen
+ */
+async function getMoodStats(supabase: any, userId: string): Promise<{ kw: number, avg: number | null }[]> {
+  const stats = [];
+  const now = new Date();
+  const eightWeeksAgo = new Date(now);
+  eightWeeksAgo.setDate(now.getDate() - 56);
+
+  const { data: entries } = await supabase
+    .from('daily_entries')
+    .select('score, created_at')
+    .eq('user_id', userId)
+    .gte('created_at', eightWeeksAgo.toLocaleDateString('en-CA'))
+    .not('score', 'is', null);
+
+  for (let i = 7; i >= 0; i--) {
+    const startOfWeek = new Date(now);
+    const dayDiff = (now.getDay() === 0 ? 6 : now.getDay() - 1);
+    startOfWeek.setDate(now.getDate() - (i * 7) - dayDiff);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const kw = getISOWeek(startOfWeek);
+    const startStr = startOfWeek.toLocaleDateString('en-CA');
+    const endStr = endOfWeek.toLocaleDateString('en-CA');
+    const weekEntries = (entries || []).filter((e: any) => e.created_at >= startStr && e.created_at <= endStr);
+    const avg = weekEntries.length > 0
+      ? weekEntries.reduce((sum: number, e: any) => sum + e.score, 0) / weekEntries.length
+      : null;
+    stats.push({ kw, avg });
+  }
+  return stats;
+}
+
+/**
  * Holt Trainingsdaten für die letzten 8 Wochen aus Supabase
  */
 async function getTrainingStats(supabase: any, userId: string): Promise<{ kw: number, count: number }[]> {
@@ -83,14 +132,36 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(14);
 
-  const stats = await getTrainingStats(supabase, user.id);
+  // Streak: letzte 100 Tage abrufen
+  const { data: streakEntries } = await supabase
+    .from('daily_entries')
+    .select('created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(100);
 
-  // Koordinaten für die gelbe Linie im Insights-Graph
+  const streak = calculateStreak(
+    (streakEntries ?? []).map((e: any) => e.created_at),
+    today
+  );
+
+  const [stats, moodStats] = await Promise.all([
+    getTrainingStats(supabase, user.id),
+    getMoodStats(supabase, user.id),
+  ]);
+
+  // Koordinaten für die gelbe Linie im Insights-Graph (Trainings)
   const svgPoints = stats.map((item, i) => {
     const x = (i * 12.5) + 6.25;
     const y = 100 - (Math.min(item.count, 8) / 8 * 100);
     return `${x},${y}`;
   }).join(' ');
+
+  // Koordinaten für die rosafarbene Linie im Insights-Graph (Mood, Skala 1–4)
+  const moodPoints = moodStats
+    .map((item, i) => item.avg !== null ? `${(i * 12.5) + 6.25},${100 - ((item.avg - 1) / 3 * 100)}` : null)
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <main className="min-h-screen bg-white flex flex-col items-center p-6 font-sans">
@@ -108,9 +179,16 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          <h2 className="font-[family-name:var(--font-cursive)] text-[#c5c1aa] text-5xl leading-tight lowercase opacity-90">
-            hello {userName}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-[family-name:var(--font-cursive)] text-[#c5c1aa] text-5xl leading-tight lowercase opacity-90">
+              hello {userName}
+            </h2>
+            {streak > 0 && (
+              <span className="text-sm font-bold text-[#b57a84] bg-[#f9f0f2] px-3 py-1 rounded-full whitespace-nowrap">
+                🔥 {streak}
+              </span>
+            )}
+          </div>
         </div>
         
         <div className="flex gap-4">
@@ -231,9 +309,9 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          <svg 
-            viewBox="0 0 100 100" 
-            className="absolute inset-0 h-full w-full pointer-events-none z-20 overflow-visible" 
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-0 h-full w-full pointer-events-none z-20 overflow-visible"
             preserveAspectRatio="none"
           >
             <polyline
@@ -245,6 +323,18 @@ export default async function DashboardPage() {
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
             />
+            {moodPoints && (
+              <polyline
+                points={moodPoints}
+                fill="none"
+                stroke="#b57a84"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                strokeDasharray="4 2"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
           </svg>
 
           <div className="absolute inset-0 h-full w-full pointer-events-none z-30 overflow-visible">
@@ -292,6 +382,17 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Legende */}
+        <div className="flex gap-6 justify-center mt-10 text-xs text-gray-400">
+          <span className="flex items-center gap-2">
+            <span className="inline-block w-4 h-0.5 bg-[#f1c40f]" /> Trainings
+          </span>
+          <span className="flex items-center gap-2">
+            <svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#b57a84" strokeWidth="2" strokeDasharray="4 2"/></svg>
+            Stimmung
+          </span>
         </div>
       </div>
 
