@@ -64,6 +64,11 @@ test.describe('Dashboard (eingeloggt)', () => {
     }
   });
 
+  test('Insights-Graph zeigt Legende mit Trainings und Stimmung', async ({ page }) => {
+    await expect(page.getByText('Trainings')).toBeVisible();
+    await expect(page.getByText('Stimmung')).toBeVisible();
+  });
+
   test('Blumengarten ist erreichbar', async ({ page }) => {
     await page.goto('/blumengarten');
     await expect(page).toHaveURL(/blumengarten/);

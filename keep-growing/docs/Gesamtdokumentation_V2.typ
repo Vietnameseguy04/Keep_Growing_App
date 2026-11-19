@@ -238,7 +238,7 @@ Herausfordernd war die Einarbeitung in eine fremde Codebasis: In Sprint 1 verbra
 Qualitätssicherung erfolgte auf drei Ebenen:
 
 + *Statische Analyse:* TypeScript mit striktem Mode (`strict: true` in `tsconfig.json`) – Typfehler werden zur Compile-Zeit abgefangen
-+ *Automatisierte Tests:* 8 Playwright-E2E-Testfälle decken alle kritischen User Journeys ab (vgl. Abschnitt 3.8)
++ *Automatisierte Tests:* 12 Playwright-E2E-Testfälle decken alle kritischen User Journeys ab (vgl. Abschnitt 3.8)
 + *Code-Review:* Kein Merge ohne Review durch ein Teammitglied
 
 == Werkzeuge und Entwicklungsumgebung
@@ -570,7 +570,7 @@ Content-Disposition: attachment; filename="keep-growing-data.json"
 #htable(
   columns: (5cm, 5cm, 1fr),
   hcell[Route], hcell[Datei], hcell[Funktion],
-  [`/dashboard`], [`(mainpage)/dashboard/page.tsx`], [Tagesübersicht: Mood-Score, Tagebucheintrag, Journal (letzte 14 Tage), SVG-Insights],
+  [`/dashboard`], [`(mainpage)/dashboard/page.tsx`], [Tagesübersicht: Mood-Score, Tagebucheintrag, Streak-Counter, Journal (14 Tage), SVG-Insights (Trainings + Stimmung)],
   [`/blumengarten`], [`(mainpage)/blumengarten/page.tsx`], [Blumengarten anzeigen; Monatsreset-Logik],
   [`/blumengarten/auswahl_blume`], [`(mainpage)/blumengarten/auswahl_blume/page.tsx`], [Blume für neuen Eintrag auswählen],
   [`/blumengarten/freunde`], [`(mainpage)/blumengarten/freunde/page.tsx`], [Freundesliste: andere Gärten anzeigen],
@@ -765,6 +765,60 @@ const { data: history } = await supabase
 
 ---
 
+=== F10 – Streak Counter
+
+*Zweck:* Gamification-Element das aufeinanderfolgende Tage mit Einträgen zählt und als 🔥-Badge neben dem Greeting anzeigt — motiviert zur täglichen Nutzung
+
+*Berechnung:*
+```typescript
+function calculateStreak(dates: string[], today: string): number {
+  const dateSet = new Set(dates);
+  let streak = 0;
+  const current = new Date(today);
+  while (dateSet.has(current.toLocaleDateString('en-CA'))) {
+    streak++;
+    current.setDate(current.getDate() - 1);
+  }
+  return streak;
+}
+```
+
+*Datenbasis:* Letzte 100 `daily_entries` des Nutzers (reicht für >3 Monate Streak). Anzeige nur wenn Streak > 0.
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
+
+---
+
+=== F11 – Mood-Graph in Insights
+
+*Zweck:* Zweite Linie im wöchentlichen Insights-Graph zeigt den durchschnittlichen Mood-Score pro Woche (gestrichelt, rosa) — ergänzt den bestehenden Trainings-Graph (gelb)
+
+*Skala:* Score 1–4 → Y-Achse 100–0 % (Score 1 = unten, Score 4 = oben)
+
+*Betroffene Datei:* `src/app/(mainpage)/dashboard/page.tsx`
+
+---
+
+=== F12 – Wöchentlicher Push-Rückblick
+
+*Zweck:* Jeden Sonntag um 9:00 Uhr (CET) erhalten alle Nutzer mit aktiver Push-Subscription eine personalisierte Zusammenfassung der vergangenen Woche
+
+*Beispiel-Notification:*
+```
+Titel: Keep Growing – Dein Wochenrückblick 🌸
+Body:  5 Einträge · Ø Stimmung 😊 · 3 Trainings diese Woche
+```
+
+*Technisch:* Gleiche Infrastruktur wie täglicher Cron — `CRON_SECRET` + Supabase Service Role Key. Pro Nutzer werden `daily_entries` und `trainings_log` der letzten 7 Tage abgefragt.
+
+*Vercel Cron:* `0 8 * * 0` (Sonntags 8:00 UTC = 9:00 CET)
+
+*Betroffene Dateien:*
+- `src/app/api/cron/weekly/route.ts`
+- `vercel.json`
+
+---
+
 === F06 – Error Boundary (PF14)
 
 *Zweck:* Fehler in Unterseiten isolieren, damit die gesamte App nicht abstürzt
@@ -796,10 +850,11 @@ const { data: history } = await supabase
   [T-05], [Dashboard nach erfolgreichem Login erreichbar und zeigt Willkommensnachricht], [Core-Flow],
   [T-06], [Dashboard zeigt Mood-Formular und Notes-Textfeld], [F09 – Journal],
   [T-07], [Journal-Abschnitt rendert wenn historische Einträge vorhanden], [F09 – Journal],
-  [T-08], [Blumengarten-Seite `/blumengarten` erreichbar], [Navigation],
-  [T-09], [Trainings-Seite `/trainings` erreichbar], [Navigation],
-  [T-10], [Einstellungen zeigen DSGVO-Abschnitt und Reminder-Button (Activate oder Deactivate)], [F02, F03, F05],
-  [T-11], [Logout funktioniert und leitet zu `/login` weiter], [Auth],
+  [T-08], [Insights-Graph zeigt Legende mit Trainings und Stimmung], [F11 – Mood-Graph],
+  [T-09], [Blumengarten-Seite `/blumengarten` erreichbar], [Navigation],
+  [T-10], [Trainings-Seite `/trainings` erreichbar], [Navigation],
+  [T-11], [Einstellungen zeigen DSGVO-Abschnitt und Reminder-Button (Activate oder Deactivate)], [F02, F03, F05],
+  [T-12], [Logout funktioniert und leitet zu `/login` weiter], [Auth],
 )
 
 *Ausführung:*
